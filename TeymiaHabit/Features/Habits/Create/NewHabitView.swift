@@ -43,7 +43,6 @@ struct NewHabitContentView: View {
         NavigationStack {
             @Bindable var vm = viewModel
             habitForm(vm: vm)
-                .secondaryBackground()
                 .navigationTitle(vm.habit == nil ? "create_habit" : "edit_habit")
                 .navigationBarTitleDisplayMode(.inline)
                 .scrollDismissesKeyboard(.immediately)
@@ -72,7 +71,9 @@ struct NewHabitContentView: View {
                 Label {
                     TextField("habit_name", text: $vm.title)
                         .fontWeight(.medium)
-                } icon: { RowIcon(iconName: "pencil") }
+                } icon: {
+                    RowIcon(iconName: "pencil", color: .gray)
+                }
                 
                 NavigationLink {
                     IconPickerView(
@@ -83,7 +84,7 @@ struct NewHabitContentView: View {
                 } label: {
                     HStack {
                         Label { Text("icon") }
-                        icon: { RowIcon(iconName: "app.background.dotted") }
+                        icon: { RowIcon(iconName: "app.specular", color: .gray) }
                         Spacer()
                         Image(vm.selectedIcon)
                             .resizable()
@@ -92,7 +93,6 @@ struct NewHabitContentView: View {
                     }
                 }
             }
-            .rowBackground()
             
             Section {
                 GoalSection(
@@ -102,7 +102,6 @@ struct NewHabitContentView: View {
                     minutes: $vm.minutes
                 )
             }
-            .rowBackground()
             
             Section {
                 RepeatDaysView(activeDays: $vm.activeDays)
@@ -112,7 +111,6 @@ struct NewHabitContentView: View {
                     reminderTimes: $vm.reminderTimes
                 )
             }
-            .rowBackground()
         }
     }
 }

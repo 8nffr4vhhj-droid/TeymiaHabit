@@ -36,13 +36,7 @@ final class HabitsViewModel {
     }
     
     func navigationTitle(for date: Date) -> String {
-        if allBaseHabits.isEmpty { return "" }
-        if Calendar.current.isDateInToday(date) { return "today".capitalized }
-        if Calendar.current.isDateInYesterday(date) { return "yesterday".capitalized }
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM"
-        return formatter.string(from: date).capitalized
+        date.formattedAsNavigationTitle()
     }
     
     // MARK: - Actions

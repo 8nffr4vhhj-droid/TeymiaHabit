@@ -1,18 +1,18 @@
 import SwiftUI
 import SwiftData
 
-struct SoundRow: View {
+struct SoundsRow: View {
     var body: some View {
-        NavigationLink(destination: SoundView()) {
+        NavigationLink(destination: SoundsView()) {
             Label(
                 title: { Text("settings_sounds") },
-                icon: { RowIcon(iconName: "speaker.wave.1") }
+                icon: { RowIcon(iconName: "speaker.wave.3.fill", color: .pink, size: 20) }
             )
         }
     }
 }
 
-struct SoundView: View {
+struct SoundsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SoundManager.self) private var soundManager
     @Environment(NotificationManager.self) private var notificationManager
@@ -31,7 +31,7 @@ struct SoundView: View {
     }
     
     var body: some View {
-        Form {
+        List {
             Section {
                 Picker("", selection: $selectedTab) {
                     ForEach(SoundTab.allCases, id: \.self) { tab in
@@ -49,7 +49,6 @@ struct SoundView: View {
                 notificationSection
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("settings_sounds")
     }
     

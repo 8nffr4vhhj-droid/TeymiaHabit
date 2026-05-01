@@ -59,18 +59,17 @@ struct IconPickerView: View {
                                     iconButton(icon: icon)
                                 }
                             }
-                            .padding(.horizontal, DS.Spacing.md)
+                            .padding(.horizontal, DS.Spacing.reg)
                         }
                     }
                 }
-                .padding(.vertical, DS.Spacing.md)
+                .padding(.vertical, DS.Spacing.reg)
             }
         }
-        .primaryBackground()
         .sensoryFeedback(.selection, trigger: selectedIcon)
         .safeAreaBar(edge: .bottom) {
             ColorSelectionView(selectedColor: $selectedColor, hexColor: $hexColor)
-                .padding(.horizontal, DS.Spacing.md)
+                .padding(.horizontal, DS.Spacing.reg)
                 .padding(.bottom, 6)
         }
         .animation(.snappy, value: searchText)
@@ -84,7 +83,7 @@ struct IconPickerView: View {
         Text(title)
             .font(DS.Typography.title2)
             .foregroundStyle(.primary)
-            .padding(.horizontal, DS.Spacing.md)
+            .padding(.horizontal, DS.Spacing.reg)
             .padding(.vertical, DS.Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -103,7 +102,7 @@ struct IconPickerView: View {
                 
                 Image(icon)
                     .resizable()
-                    .frame(size: DS.IconSize.md)
+                    .frame(size: DS.IconSize.reg)
                     .foregroundStyle(isSelected ? DS.Colors.onPrimary : DS.Colors.appPrimary)
             }
             .frame(width: Layout.circleSize, height: Layout.circleSize)

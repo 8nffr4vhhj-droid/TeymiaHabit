@@ -11,6 +11,7 @@ struct ActionButtonsSection: View {
     
     var onReset: () -> Void
     var onTimerToggle: () -> Void
+    var onAddProgress: (Int) -> Void
     
     var body: some View {
         HStack(spacing: DS.Spacing.lg) {
@@ -34,7 +35,7 @@ struct ActionButtonsSection: View {
     private var resetButton: some View {
         Button(action: onReset) {
             Image(systemName: "arrow.uturn.backward")
-                .font(.system(size: DS.IconSize.md, weight: .medium))
+                .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.appPrimary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
@@ -63,15 +64,14 @@ struct ActionButtonsSection: View {
             isShowingPopover = true
         } label: {
             Image(systemName: "plus.arrow.trianglehead.clockwise")
-                .font(.system(size: DS.IconSize.md, weight: .medium))
+                .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.appPrimary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
         .contentShape(.circle)
         .popover(isPresented: $isShowingPopover) {
-            DayProgressPopover(habit: habit, date: date)
-                .environment(habitService)
+            DayProgressPopover(habit: habit, date: date, onAddProgress: onAddProgress)
                 .presentationCompactAdaptation(.popover)
         }
     }

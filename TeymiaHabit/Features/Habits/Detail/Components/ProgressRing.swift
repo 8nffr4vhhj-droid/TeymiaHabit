@@ -181,7 +181,7 @@ private extension ProgressRing {
             .minimumScaleFactor(Metrics.minimumScaleFactor)
             .lineLimit(Metrics.lineLimit)
             .frame(width: size * Metrics.textFrameWidthRatio, height: size * Metrics.textFrameHeightRatio)
-            .contentTransition(.numericText())
-            .animation(.spring, value: currentValue)
+//            .contentTransition(.numericText())
+//            .animation(.spring, value: currentValue)
     }
 }

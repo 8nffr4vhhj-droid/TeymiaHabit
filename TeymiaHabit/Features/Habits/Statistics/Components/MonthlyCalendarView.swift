@@ -6,15 +6,16 @@ struct MonthlyCalendarView: View {
     let habit: Habit
     
     @Binding var selectedDate: Date
-    
+    @Query private var completions: [HabitCompletion]
     @Environment(\.modelContext) private var modelContext
     
     // MARK: - State
     @State private var months: [Date] = []
     @State private var currentMonthIndex: Int = 0
     @State private var monthCalendarCache: [Int: [[Date?]]] = [:]
+    @State private var progressCache: [Date: Double] = [:]
     @State private var tappedDate: Date? = nil
-    @State private var popoverDate: Date? = nil
+    @State private var detailSheetDate: Date? = nil
     
     private var calendar: Calendar { Calendar.userPreferred }
     
@@ -22,15 +23,18 @@ struct MonthlyCalendarView: View {
     init(habit: Habit, selectedDate: Binding<Date>) {
         self.habit = habit
         self._selectedDate = selectedDate
+        
+        let habitId = habit.persistentModelID
+        _completions = Query(filter: #Predicate<HabitCompletion> {
+            $0.habit?.persistentModelID == habitId
+        })
     }
     
     // MARK: - Body
     var body: some View {
         VStack {
             monthNavigationHeader
-            
             weekdayHeader
-            
             if !months.isEmpty {
                 monthGridContainer
             }
@@ -38,6 +42,20 @@ struct MonthlyCalendarView: View {
         .onAppear(perform: setupCalendar)
         .onChange(of: selectedDate) { _, newDate in
             updateMonthIfNeeded(for: newDate)
+        }
+        .onChange(of: completions) { _, _ in
+            guard detailSheetDate == nil else { return }
+            progressCache = [:]
+            loadProgressForMonth(at: currentMonthIndex)
+        }
+        .onChange(of: detailSheetDate) { _, newValue in
+            if newValue == nil {
+                progressCache = [:]
+                loadProgressForMonth(at: currentMonthIndex)
+            }
+        }
+        .sheet(item: $detailSheetDate) { date in
+            HabitDetailView(habit: habit, date: date, showStatsButton: false)
         }
     }
     
@@ -96,6 +114,7 @@ struct MonthlyCalendarView: View {
                 monthGrid(forIndex: index)
                     .frame(height: 280)
                     .tag(index)
+                    .drawingGroup()
                     .onAppear {
                         cacheCalendarDays(for: index)
                     }
@@ -108,6 +127,7 @@ struct MonthlyCalendarView: View {
         }
         .onChange(of: currentMonthIndex) { _, newValue in
             generateCalendarDaysIfNeeded(for: newValue)
+            loadProgressForMonth(at: newValue)
             if newValue > 0 { generateCalendarDaysIfNeeded(for: newValue - 1) }
             if newValue < months.count - 1 { generateCalendarDaysIfNeeded(for: newValue + 1) }
         }
@@ -123,24 +143,23 @@ struct MonthlyCalendarView: View {
                     let isAfterStart = date >= habit.startDate
                     let isActive = habit.isActiveOnDate(date)
                     let isFullActive = isBeforeToday && isAfterStart && isActive
+                    let startOfDay = calendar.startOfDay(for: date)
+                    let progress = progressCache[startOfDay] ?? habit.completionPercentageForDate(date)
                     
                     DayProgressItem(
                         date: date,
                         isSelected: calendar.isDate(selectedDate, inSameDayAs: date),
-                        progress: habit.completionPercentageForDate(date),
+                        progress: progress,
                         showProgressRing: isFullActive,
-                        habit: habit
+                        ringColors: habit.ringColors
                     )
+                    .equatable()
                     .frame(width: 40, height: 40)
-                    .contentShape(Rectangle())
+                    .contentShape(.circle)
                     .onTapGesture {
                         guard isFullActive else { return }
                         selectedDate = date
-                        popoverDate = date
-                    }
-                    .popover(item: $popoverDate) { date in
-                        DayProgressPopover(habit: habit, date: date)
-                            .presentationCompactAdaptation(.popover)
+                        detailSheetDate = date
                     }
                 } else {
                     Color.clear.frame(width: 40, height: 40)
@@ -190,6 +209,7 @@ struct MonthlyCalendarView: View {
         generateMonths()
         findCurrentMonthIndex()
         generateCalendarDaysIfNeeded(for: currentMonthIndex)
+        loadProgressForMonth(at: currentMonthIndex)
     }
     
     private func updateMonthIfNeeded(for newDate: Date) {
@@ -264,6 +284,14 @@ struct MonthlyCalendarView: View {
         
         let days = generateCalendarDays(for: months[index])
         monthCalendarCache[index] = days
+    }
+    
+    private func loadProgressForMonth(at index: Int) {
+        let days = getCalendarDays(for: index).flatMap { $0 }.compactMap { $0 }
+        for date in days {
+            let startOfDay = calendar.startOfDay(for: date)
+            progressCache[startOfDay] = habit.completionPercentageForDate(date)
+        }
     }
     
     // MARK: - Progress Loading

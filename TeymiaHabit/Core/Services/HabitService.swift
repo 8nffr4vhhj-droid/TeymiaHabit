@@ -5,10 +5,12 @@ import SwiftData
 final class HabitService {
     private let modelContext: ModelContext
     private let widgetService: WidgetService
+    private let notificationManager: NotificationManager
     
-    init(modelContext: ModelContext, widgetService: WidgetService) {
+    init(modelContext: ModelContext, widgetService: WidgetService, notificationManager: NotificationManager) {
         self.modelContext = modelContext
         self.widgetService = widgetService
+        self.notificationManager = notificationManager
     }
     
     // MARK: - Progress Management
@@ -123,14 +125,23 @@ final class HabitService {
     }
     
     func delete(_ habit: Habit) {
+        notificationManager.cancelNotifications(for: habit)
         modelContext.delete(habit)
         saveAndRefresh()
     }
     
     // MARK: - Private Helpers
     
+    private var saveTask: Task<Void, Never>?
+    
     private func saveAndRefresh() {
-        try? modelContext.save()
         widgetService.reloadWidgetsAfterDataChange()
+        
+        saveTask?.cancel()
+        saveTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            try? modelContext.save()
+        }
     }
 }

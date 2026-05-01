@@ -110,7 +110,6 @@ struct HabitsContentView: View {
         List {
             habitListContent
         }
-        .primaryBackground()
         .listStyle(.plain)
         .scrollIndicators(.hidden)
         .environment(\.editMode, $isEditMode)
@@ -138,9 +137,9 @@ struct HabitsContentView: View {
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets(
                 top: DS.Spacing.xs,
-                leading: DS.Spacing.md,
+                leading: DS.Spacing.reg,
                 bottom: DS.Spacing.xs,
-                trailing: DS.Spacing.md
+                trailing: DS.Spacing.reg
             ))
             .onTapGesture {
                 guard isEditMode != .active else { return }

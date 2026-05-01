@@ -11,8 +11,8 @@ struct DayProgressPopover: View {
     // MARK: - Properties
     let habit: Habit
     let date: Date
+    let onAddProgress: (Int) -> Void
     
-    @Environment(HabitService.self) private var habitService
     @Environment(\.dismiss) private var dismiss
     
     @State private var inputText: String = ""
@@ -24,7 +24,7 @@ struct DayProgressPopover: View {
     
     // MARK: - Body
     var body: some View {
-        VStack(spacing: DS.Spacing.md) {
+        VStack(spacing: DS.Spacing.reg) {
             VStack(spacing: DS.Spacing.xxs) {
                 Text(date.formatted(date: .abbreviated, time: .omitted))
                     .font(DS.Typography.subheadline)
@@ -85,20 +85,20 @@ struct DayProgressPopover: View {
         .buttonStyle(.plain)
         .glassEffect(.regular.interactive().tint(DS.Colors.appTertiary), in: .capsule)
         .padding(.horizontal, DS.Spacing.xl)
-        .padding(.bottom, DS.Spacing.md)
+        .padding(.bottom, DS.Spacing.reg)
     }
     
     // MARK: - Logic
     private func addProgress() {
         if habit.type == .count {
             if let val = Int(inputText), val > 0 {
-                habitService.addProgress(val, to: habit, date: date)
+                onAddProgress(val)
             }
         } else {
             let comps = Calendar.current.dateComponents([.hour, .minute], from: selectedTime)
             let totalSeconds = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60
             if totalSeconds > 0 {
-                habitService.addProgress(totalSeconds, to: habit, date: date)
+                onAddProgress(totalSeconds)
             }
         }
     }

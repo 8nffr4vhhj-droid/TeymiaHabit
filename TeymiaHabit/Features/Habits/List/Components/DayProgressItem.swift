@@ -5,7 +5,7 @@ struct DayProgressItem: View, Equatable {
     let isSelected: Bool
     let progress: Double
     var showProgressRing: Bool = true
-    var habit: Habit? = nil
+    var ringColors: (dark: Color, light: Color)? = nil
     var isOverallProgress: Bool = false
     
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -22,10 +22,6 @@ struct DayProgressItem: View, Equatable {
     
     private var isFutureDate: Bool {
         date > Date()
-    }
-    
-    private var isValidDate: Bool {
-        date <= Date().addingTimeInterval(86400 * 365)
     }
     
     private var circleSize: CGFloat {
@@ -61,40 +57,20 @@ struct DayProgressItem: View, Equatable {
         }
     }
     
-    private var dayTextColor: Color {
-        if isToday {
-            return .appOrange
-        } else if isSelected {
-            return .primary
-        } else if isFutureDate {
-            return .primary
-        } else {
-            return .primary
-        }
-    }
-    
     private var fontWeight: Font.Weight {
-        if isSelected {
-            return .bold
-        } else {
-            return .regular
-        }
+        isSelected ? .bold : .regular
     }
     
     var body: some View {
             VStack(spacing: 6) {
                 ZStack {
                     if showProgressRing && !isFutureDate {
-                        if let habit = habit {
-                            ProgressRing(
+                        if let colors = ringColors {
+                            CalendarProgressRing(
                                 progress: progress,
-                                currentValue: "",
-                                isCompleted: progress >= 1.0,
-                                isExceeded: habit.isExceededForDate(date),
-                                habit: habit,
+                                ringColors: colors,
                                 size: circleSize,
-                                lineWidth: lineWidth,
-                                hideContent: true
+                                lineWidth: lineWidth
                             )
                         } else if isOverallProgress {
                             overallProgressRing
@@ -103,7 +79,7 @@ struct DayProgressItem: View, Equatable {
                     
                     Text(dayNumber)
                         .font(.system(size: fontSize, weight: fontWeight))
-                        .foregroundStyle(dayTextColor.gradient)
+                        .foregroundStyle(isToday ? Color.appOrange.gradient : Color.primary.gradient)
                 }
                 .frame(width: circleSize, height: circleSize)
                 
@@ -140,16 +116,16 @@ struct DayProgressItem: View, Equatable {
                     )
                 )
                 .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 0.3), value: progress)
+                .animation(DS.Animations.easeInOut, value: progress)
         }
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date) &&
-        lhs.isSelected == rhs.isSelected &&
-        abs(lhs.progress - rhs.progress) < 0.01 &&
-        lhs.showProgressRing == rhs.showProgressRing &&
-        lhs.habit?.id == rhs.habit?.id &&
-        lhs.isOverallProgress == rhs.isOverallProgress
-    }
+          Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date) &&
+          lhs.isSelected == rhs.isSelected &&
+          abs(lhs.progress - rhs.progress) < 0.01 &&
+          lhs.showProgressRing == rhs.showProgressRing &&
+          lhs.isOverallProgress == rhs.isOverallProgress
+        
+      }
 }

@@ -1,0 +1,39 @@
+import SwiftUI
+
+// Lightweight ring used only in calendar cells.
+// Accepts plain values instead of a Habit model to avoid SwiftUI re-renders
+// triggered by SwiftData @Model observation.
+struct CalendarProgressRing: View {
+    let progress: Double
+    let ringColors: (dark: Color, light: Color)
+    let size: CGFloat
+    let lineWidth: CGFloat
+
+    private var clampedProgress: CGFloat {
+        CGFloat(min(max(progress, 0), 1.0))
+    }
+
+    var body: some View {
+        ZStack {
+            // Background track
+            Circle()
+                .stroke(DS.Colors.secondaryOpacity, lineWidth: lineWidth)
+
+            // Progress arc
+            Circle()
+                .trim(from: 0, to: clampedProgress)
+                .stroke(
+                    AngularGradient(
+                        colors: [ringColors.light, ringColors.dark, ringColors.dark, ringColors.light],
+                        center: .center,
+                        startAngle: .degrees(-90),
+                        endAngle: .degrees(270)
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 0.3), value: progress)
+        }
+        .frame(width: size, height: size)
+    }
+}

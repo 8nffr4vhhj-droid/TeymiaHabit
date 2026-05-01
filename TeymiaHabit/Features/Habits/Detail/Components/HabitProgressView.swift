@@ -9,7 +9,7 @@ struct HabitProgressView: View {
     }
 
     var body: some View {
-        HStack(spacing: DS.Spacing.md) {
+        HStack(spacing: DS.Spacing.reg) {
             Spacer()
 
             ProgressIconButton(
@@ -50,7 +50,7 @@ struct ProgressIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: DS.IconSize.md, weight: .medium))
+                .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.appPrimary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
                 .background(DS.Colors.secondaryOpacity, in: .circle)

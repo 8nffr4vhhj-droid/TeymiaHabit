@@ -1,7 +1,8 @@
 import Foundation
 
 enum CompletionSound: String, CaseIterable, Identifiable {
-    case `default`, chime, chord, click, droplet, echo, flow, glow, horizon, marimba, slide, sparkle, success, sunrise, surge, touch, veil, violin
+    case `default`, chime, chord, click, droplet, echo, flow, glow, horizon,
+         marimba, slide, sparkle, success, sunrise, surge, touch, veil, violin
 
     var id: String { rawValue }
 

@@ -39,7 +39,9 @@ struct MainTabView: View {
         }
         
         Tab.init(AppTab.settings.title, systemImage: AppTab.settings.symbolImage, value: .settings) {
+            NavigationStack {
                 SettingsView()
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ struct AnimatedTabView<Selection: AnimatedTabSelectionProtocol, Content: TabCont
         TabView(selection: $selection) {
             content()
         }
-//        .tabViewStyle(.)
+        .tabViewStyle(.sidebarAdaptable)
         .background(ExtractImageViewsFromTabView {
             imageViews = $0
         })

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppearanceRow: View {
     @AppStorage("themeMode") private var themeMode: ThemeMode = .system
-        
+    
     var body: some View {
         Picker(selection: $themeMode) {
             ForEach(ThemeMode.allCases, id: \.self) { mode in
@@ -11,8 +11,9 @@ struct AppearanceRow: View {
         } label: {
             Label(
                 title: { Text("settings_appearance") },
-                icon: { RowIcon(iconName: themeMode.iconName) }
+                icon: { RowIcon(iconName: themeMode.iconName, color: themeMode.iconColor) }
             )
+            .contentTransition(.symbolEffect(.replace))
         }
         .pickerStyle(.menu)
         .tint(.secondary)

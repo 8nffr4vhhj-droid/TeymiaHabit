@@ -6,7 +6,7 @@ struct ArchiveRow: View {
         NavigationLink(destination: ArchiveView()) {
             Label(
                 title: { Text("settings_archived_habits") },
-                icon: { RowIcon(iconName: "archivebox") }
+                icon: { RowIcon(iconName: "archivebox.fill", color: .gray) }
             )
         }
     }

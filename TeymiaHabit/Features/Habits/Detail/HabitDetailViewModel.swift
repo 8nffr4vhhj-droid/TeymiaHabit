@@ -114,6 +114,13 @@ final class HabitDetailViewModel {
         updateLiveActivityIfNeeded(progress: new, timerRunning: false)
     }
     
+    func resetProgress() {
+        stopTimerAndEndActivity()
+        uiProgressOverride = 0
+        habitService.resetProgress(for: habit, date: currentDisplayedDate)
+        updateLiveActivityIfNeeded(progress: 0, timerRunning: false)
+    }
+    
     func completeHabit() {
         guard !isAlreadyCompleted else { return }
         stopTimerAndEndActivity()
@@ -122,11 +129,11 @@ final class HabitDetailViewModel {
         soundManager.playCompletionSound()
     }
     
-    func resetProgress() {
-        stopTimerAndEndActivity()
-        uiProgressOverride = 0
-        habitService.resetProgress(for: habit, date: currentDisplayedDate)
-        updateLiveActivityIfNeeded(progress: 0, timerRunning: false)
+    func addProgress(_ value: Int) {
+        let maxValue = habit.type == .count ? 999_999 : 86_400
+        let new = min(currentProgress + value, maxValue)
+        uiProgressOverride = new
+        saveProgress(new)
     }
     
     // MARK: - Timer Actions

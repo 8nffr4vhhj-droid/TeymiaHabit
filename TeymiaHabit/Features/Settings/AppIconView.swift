@@ -1,15 +1,24 @@
 import SwiftUI
 
+#if !targetEnvironment(macCatalyst)
 struct AppIconRow: View {
     var body: some View {
         NavigationLink(destination: AppIconView()) {
             Label(
                 title: { Text("settings_app_icon") },
-                icon: { RowIcon(iconName: "app.specular") }
+                icon: {
+                    RowIcon(
+                        iconName: "checkmark",
+                        weight: .semibold,
+                        color: Color.primary,
+                        isWhiteBG: true
+                    )
+                }
             )
         }
     }
 }
+#endif
 
 struct AppIconView: View {
     @Environment(AppIconManager.self) private var appIconManager
@@ -46,10 +55,10 @@ struct AppIconView: View {
     }
     
     private func iconSelection(_ icon: AppIcon) {
-            appIconManager.setAppIcon(icon)
-            withAnimation(.spring()) {
-                currentIcon = icon
-            }
+        appIconManager.setAppIcon(icon)
+        withAnimation(.spring()) {
+            currentIcon = icon
+        }
     }
 }
 

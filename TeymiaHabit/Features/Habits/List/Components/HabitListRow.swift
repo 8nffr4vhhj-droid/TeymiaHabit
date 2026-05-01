@@ -75,7 +75,7 @@ struct HabitListRow: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, DS.Spacing.md)
+        .padding(.horizontal, DS.Spacing.reg)
         .padding(.vertical, DS.Spacing.sm)
         .onChange(of: timerService.updateTrigger) { _, _ in
             if isTimerActive {
@@ -101,7 +101,7 @@ struct HabitListRow: View {
         
         var body: some View {
             HabitListRow(habit: habit, date: date)
-                .glassEffect(.regular.tint(DS.Colors.rowBackground), in: cardShape)
+                .glassEffect(.regular.interactive(false), in: cardShape)
                 .contentShape(cardShape)
                 .contentShape(.dragPreview, cardShape)
                 .contentShape(.contextMenuPreview, cardShape)

@@ -7,7 +7,9 @@ struct GoalSection: View {
     @Binding var minutes: Int
     
     @State private var countText: String = ""
-    @State private var timeDate: Date = Calendar.current.date(bySettingHour: 1, minute: 0, second: 0, of: Date()) ?? Date()
+    @State private var timeDate: Date = Calendar.current.date(
+        bySettingHour: 1, minute: 0, second: 0, of: Date()
+    ) ?? Date()
     
     var body: some View {
         Section {
@@ -25,7 +27,7 @@ struct GoalSection: View {
                     .labelsHidden()
                     .frame(maxWidth: 200)
                 }
-            } icon: { RowIcon(iconName: "trophy") }
+            } icon: { RowIcon(iconName: "trophy", color: .gray) }
             
             if selectedType == .count {
                 Label {

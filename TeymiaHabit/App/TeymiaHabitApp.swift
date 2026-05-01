@@ -7,8 +7,9 @@ struct TeymiaHabitApp: App {
     @Environment(\.scenePhase) private var scenePhase
     let modelContainer: ModelContainer
     @State private var habitService: HabitService
-    @State private var widgetService = WidgetService()
-    @State private var notificationManager = NotificationManager()
+    @State private var widgetService: WidgetService
+    @State private var notificationManager: NotificationManager
+    
     @State private var soundManager = SoundManager()
     @State private var timerService = TimerService()
     @State private var navManager = NavigationManager()
@@ -18,7 +19,10 @@ struct TeymiaHabitApp: App {
     init() {
         AppFont.configureAppearance()
         
-        guard let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.amanbayserkeev.teymiahabit") else {
+        guard let groupURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.amanbayserkeev.teymiahabit"
+        )
+        else {
             fatalError("App Group container not found. Check your entitlements.")
         }
         
@@ -28,12 +32,16 @@ struct TeymiaHabitApp: App {
         
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
+            let widgetService = WidgetService()
+            let notificationManager = NotificationManager()
+            
             self.modelContainer = container
-            let widgetSvc = WidgetService()
-            self._widgetService = State(initialValue: widgetSvc)
+            self._notificationManager = State(initialValue: notificationManager)
+            self._widgetService = State(initialValue: widgetService)
             self._habitService = State(initialValue: HabitService(
                 modelContext: container.mainContext,
-                widgetService: widgetSvc
+                widgetService: widgetService,
+                notificationManager: notificationManager
             ))
         } catch {
             fatalError("Failed to create ModelContainer: \(error.localizedDescription)")

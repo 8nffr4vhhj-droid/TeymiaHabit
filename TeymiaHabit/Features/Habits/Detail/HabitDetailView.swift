@@ -2,15 +2,26 @@ import SwiftUI
 import SwiftData
 
 struct HabitDetailView: View {
-    let habit: Habit
-    let date: Date
-    
     @Environment(HabitService.self) private var habitService
     @Environment(TimerService.self) private var timerService
     @Environment(WidgetService.self) private var widgetService
     @Environment(NotificationManager.self) private var notificationManager
     @Environment(SoundManager.self) private var soundManager
     @Environment(HabitLiveActivityManager.self) private var habitLiveActivityManager
+    
+    let habit: Habit
+    let date: Date
+    let showStatsButton: Bool
+    
+    init(
+        habit: Habit,
+        date: Date,
+        showStatsButton: Bool = true
+    ) {
+        self.habit = habit
+        self.date = date
+        self.showStatsButton = showStatsButton
+    }
     
     var body: some View {
         HabitDetailContentView(
@@ -25,7 +36,8 @@ struct HabitDetailView: View {
                 notificationManager: notificationManager,
                 soundManager: soundManager,
                 habitLiveActivityManager: habitLiveActivityManager
-            )
+            ),
+            showStatsButton: showStatsButton
         )
     }
 }
@@ -33,6 +45,7 @@ struct HabitDetailView: View {
 struct HabitDetailContentView: View {
     let habit: Habit
     let date: Date
+    let showStatsButton: Bool
     
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: HabitDetailViewModel
@@ -42,10 +55,12 @@ struct HabitDetailContentView: View {
     init(
         habit: Habit,
         date: Date,
-        viewModel: HabitDetailViewModel
+        viewModel: HabitDetailViewModel,
+        showStatsButton: Bool = true
     ) {
         self.habit = habit
         self.date = date
+        self.showStatsButton = showStatsButton
         _viewModel = State(wrappedValue: viewModel)
     }
     
@@ -91,9 +106,9 @@ struct HabitDetailContentView: View {
             
             HabitProgressView(vm: vm, habit: habit)
             
-                actionButtonsSection(viewModel: vm)
+                actionButtonsSection(vm: vm)
             
-                completeButtonView(viewModel: vm)
+                completeButtonView(vm: vm)
                     .disabled(vm.isAlreadyCompleted)
                     .padding(.horizontal, DS.Spacing.xl)
         }
@@ -117,15 +132,27 @@ struct HabitDetailContentView: View {
     
     @ToolbarContentBuilder
     private func toolbarContent(vm: HabitDetailViewModel) -> some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Button {
-                showingStats = true
-            } label: {
-                Image(systemName: "chart.bar.fill")
+        ToolbarItem(placement: .topBarLeading) {
+            if !Calendar.current.isDateInToday(date) {
+                Text(date.formattedAsNavigationTitle())
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: true, vertical: false)
             }
-            .tint(.primary)
         }
-        ToolbarItem(placement: .primaryAction) {
+        .sharedBackgroundVisibility(.hidden)
+        
+        if showStatsButton {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingStats = true
+                } label: {
+                    Image(systemName: "chart.bar.fill")
+                }
+                .tint(.primary)
+            }
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
             menuButton(vm: vm)
         }
     }
@@ -155,20 +182,21 @@ struct HabitDetailContentView: View {
         .tint(.primary)
     }
     
-    private func actionButtonsSection(viewModel: HabitDetailViewModel) -> some View {
+    private func actionButtonsSection(vm: HabitDetailViewModel) -> some View {
         ActionButtonsSection(
             habit: habit,
             date: date,
             isToday: Calendar.current.isDateInToday(date),
-            isTimerRunning: viewModel.isTimerRunning,
-            onReset: { viewModel.resetProgress() },
-            onTimerToggle: { viewModel.toggleTimer() }
+            isTimerRunning: vm.isTimerRunning,
+            onReset: { vm.resetProgress() },
+            onTimerToggle: { vm.toggleTimer() },
+            onAddProgress: { value in vm.addProgress(value) }
         )
     }
     
-    private func completeButtonView(viewModel: HabitDetailViewModel) -> some View {
+    private func completeButtonView(vm: HabitDetailViewModel) -> some View {
         Button(action: {
-            viewModel.completeHabit()
+            vm.completeHabit()
         }) {
             Text(viewModel.isAlreadyCompleted ? "completed" : "complete")
                 .font(DS.Typography.headline)

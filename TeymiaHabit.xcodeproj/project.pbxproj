@@ -82,8 +82,8 @@
 				"Core/Extensions/Сolor.swift",
 				Core/Models/HabitIconColor.swift,
 				Resources/Assets.xcassets,
-				UI/DesignSystem.swift,
-				UI/HabitIconView.swift,
+				Shared/DesignSystem.swift,
+				Shared/HabitIconView.swift,
 			);
 			target = 077FAE6D2E12DE7C007790C5 /* liveactivityExtension */;
 		};
@@ -108,8 +108,8 @@
 				Core/Models/HabitType.swift,
 				Core/Utilities/Weekday.swift,
 				Resources/Assets.xcassets,
-				UI/DesignSystem.swift,
-				UI/HabitIconView.swift,
+				Shared/DesignSystem.swift,
+				Shared/HabitIconView.swift,
 			);
 			target = 07EA6CCB2E31DFB800171765 /* TeymiaHabitWidgetsExtension */;
 		};
@@ -459,6 +459,7 @@
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -530,6 +531,7 @@
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -592,6 +594,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "\"AppIconCyan, AppIconDark, AppIconIndigo, AppIconLime, AppIconMint, AppIconOrange, AppIconRaspberry, AppIconYellow\"";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = TeymiaHabit/TeymiaHabit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -640,6 +643,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "\"AppIconCyan, AppIconDark, AppIconIndigo, AppIconLime, AppIconMint, AppIconOrange, AppIconRaspberry, AppIconYellow\"";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = TeymiaHabit/TeymiaHabit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
