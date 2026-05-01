@@ -1,4 +1,3 @@
-#if os(iOS)
 import SwiftUI
 
 struct AppIconRow: View {
@@ -71,4 +70,3 @@ struct AppIconImage: View {
         }
     }
 }
-#endif

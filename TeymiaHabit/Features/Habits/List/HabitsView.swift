@@ -31,9 +31,7 @@ struct HabitsContentView: View {
     @Environment(NavigationManager.self) private var navManager
     @Binding var selectedDate: Date
     @State private var vm: HabitsViewModel
-    #if os(iOS)
     @State private var isEditMode: EditMode = .inactive
-    #endif
     @State private var selectedHabit: Habit?
     @State private var showingNewHabit = false
     @State private var habitToEdit: Habit? = nil
@@ -57,21 +55,13 @@ struct HabitsContentView: View {
             }
         }
         .sheet(isPresented: $showingNewHabit) {
-            NavigationStack {
                 NewHabitView()
-            }
         }
         .sheet(item: $habitToEdit) { habit in
-            NavigationStack {
                 NewHabitView(habit: habit)
-            }
         }
         .sheet(item: $selectedHabit) { habit in
-            NavigationStack {
-                HabitDetailView(habit: habit, date: selectedDate)
-                    .presentationDetents([.fraction(0.6)])
-                    .presentationDragIndicator(.visible)
-            }
+            HabitDetailView(habit: habit, date: selectedDate)
         }
         .onChange(of: navManager.habitToOpen) { _, habit in
             guard let habit else { return }
@@ -83,9 +73,8 @@ struct HabitsContentView: View {
     // MARK: - Toolbar
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        #if os(iOS)
         if !vm.allBaseHabits.isEmpty {
-            ToolbarItem(placement: .secondaryAction) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button {
                     withAnimation {
                         isEditMode = isEditMode == .active ? .inactive : .active
@@ -96,10 +85,9 @@ struct HabitsContentView: View {
                 }
             }
         }
-        #endif
         
         if !Calendar.current.isDateInToday(selectedDate) {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { selectedDate = Date() } label: {
                     Image(systemName: "arrowshape.turn.up.left")
                         .foregroundStyle(Color.primary)
@@ -107,9 +95,9 @@ struct HabitsContentView: View {
             }
         }
         
-        ToolbarSpacer(.fixed, placement: .primaryAction)
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
         
-        ToolbarItem(placement: .primaryAction) {
+        ToolbarItem(placement: .topBarTrailing) {
             Button { showingNewHabit = true } label: {
                 Image(systemName: "plus")
                     .foregroundStyle(Color.primary)
@@ -122,14 +110,13 @@ struct HabitsContentView: View {
         List {
             habitListContent
         }
+        .primaryBackground()
         .listStyle(.plain)
         .scrollIndicators(.hidden)
-        #if os(iOS)
         .environment(\.editMode, $isEditMode)
-        #endif
         .environment(vm)
         .navigationTitle(vm.navigationTitle(for: selectedDate))
-//        .navigationBarTitleDisplayMode(.inline) TODO
+        .navigationBarTitleDisplayMode(.large)
         .toolbar { toolbarContent }
     }
     
@@ -150,15 +137,13 @@ struct HabitsContentView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets(
-                top: DS.Spacing.s6,
-                leading: DS.Spacing.s16,
-                bottom: DS.Spacing.s6,
-                trailing: DS.Spacing.s16
+                top: DS.Spacing.xs,
+                leading: DS.Spacing.md,
+                bottom: DS.Spacing.xs,
+                trailing: DS.Spacing.md
             ))
             .onTapGesture {
-                #if os(iOS)
                 guard isEditMode != .active else { return }
-                #endif
                 selectedHabit = habit
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -194,12 +179,12 @@ struct HabitsContentView: View {
                     }
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.blackWhite)
-                    .padding(.horizontal, DS.Spacing.s24)
-                    .padding(.vertical, DS.Spacing.s12)
+                    .foregroundStyle(DS.Colors.onPrimary)
+                    .padding(.horizontal, DS.Spacing.xl)
+                    .padding(.vertical, DS.Spacing.sm)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.tint(.primary).interactive(), in: .capsule)
+                .glassEffect(.clear.tint(DS.Colors.appTertiary).interactive(), in: .capsule)
             }
         )
     }

@@ -24,8 +24,6 @@ struct IconPickerView: View {
         static let circleSize: CGFloat = 44
         static let gridSpacing: CGFloat = 14
         static let selectedScale: CGFloat = 1.15
-        static let horizontalPadding: CGFloat = DS.Spacing.s16
-        static let verticalPadding: CGFloat = DS.Spacing.s16
     }
     
     private let columns = Array(
@@ -61,22 +59,22 @@ struct IconPickerView: View {
                                     iconButton(icon: icon)
                                 }
                             }
-                            .padding(.horizontal, Layout.horizontalPadding)
+                            .padding(.horizontal, DS.Spacing.md)
                         }
                     }
                 }
-                .padding(.vertical, Layout.verticalPadding)
+                .padding(.vertical, DS.Spacing.md)
             }
         }
+        .primaryBackground()
         .sensoryFeedback(.selection, trigger: selectedIcon)
         .safeAreaBar(edge: .bottom) {
             ColorSelectionView(selectedColor: $selectedColor, hexColor: $hexColor)
-                .padding(.horizontal, Layout.horizontalPadding)
+                .padding(.horizontal, DS.Spacing.md)
                 .padding(.bottom, 6)
         }
         .animation(.snappy, value: searchText)
         .navigationTitle("icon")
-//        .navigationBarTitleDisplayMode(.inline) TODO
         .searchable(text: $searchText)
     }
     
@@ -84,10 +82,10 @@ struct IconPickerView: View {
     
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(DS.Typography.titleMedium)
+            .font(DS.Typography.title2)
             .foregroundStyle(.primary)
-            .padding(.horizontal, Layout.horizontalPadding)
-            .padding(.vertical, DS.Spacing.s8)
+            .padding(.horizontal, DS.Spacing.md)
+            .padding(.vertical, DS.Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -95,18 +93,18 @@ struct IconPickerView: View {
         let isSelected = selectedIcon == icon
         
         return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(DS.Animations.spring) {
                 selectedIcon = icon
             }
         } label: {
             ZStack {
                 Circle()
-                    .fill(isSelected ? activeColor : .secondary.opacity(0.1))
+                    .fill(isSelected ? activeColor : DS.Colors.appSecondary)
                 
                 Image(icon)
                     .resizable()
-                    .frame(size: DS.Icon.s24)
-                    .foregroundStyle(isSelected ? Color.blackWhite : .primary)
+                    .frame(size: DS.IconSize.md)
+                    .foregroundStyle(isSelected ? DS.Colors.onPrimary : DS.Colors.appPrimary)
             }
             .frame(width: Layout.circleSize, height: Layout.circleSize)
             .contentShape(Rectangle())

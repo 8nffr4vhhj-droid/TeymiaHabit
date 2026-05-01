@@ -15,14 +15,14 @@ enum Weekday: Int, CaseIterable, Hashable, Sendable {
         self == .saturday || self == .sunday
     }
     
-    static func from(date: Date) -> Weekday {
+    static func from(date: Date) -> Self {
         let weekdayNumber = Calendar.current.component(.weekday, from: date)
-        return Weekday(rawValue: weekdayNumber) ?? .sunday
+        return Self(rawValue: weekdayNumber) ?? .sunday
     }
     
-    static var orderedByUserPreference: [Weekday] {
+    static var orderedByUserPreference: [Self] {
         let firstDay = Calendar.current.firstWeekday
-        let all = Weekday.allCases
+        let all = Self.allCases
         let startIndex = firstDay - 1
         let firstPart = all[startIndex...]
         let secondPart = all[..<startIndex]

@@ -43,7 +43,7 @@ struct WeeklyCalendarView: View {
                         .tag(index)
                 }
             }
-//            .tabViewStyle(.page(indexDisplayMode: .never)) TODO
+            .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 55)
         }
         .onChange(of: currentWeekIndex) { _, _ in
@@ -99,7 +99,7 @@ struct WeeklyCalendarView: View {
 
     private var completionsData: [String] {
         allCompletions.map { completion in
-            let habitID = completion.habit != nil ? String(describing: completion.habit!.id) : ""
+            let habitID = completion.habit.map { String(describing: $0.id) } ?? ""
             return "\(completion.date.timeIntervalSince1970)-\(completion.value)-\(habitID)"
         }
     }

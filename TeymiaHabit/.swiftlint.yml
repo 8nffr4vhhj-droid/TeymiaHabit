@@ -41,7 +41,6 @@ function_body_length:
 
 nesting:
   type_level: 3
-  statement_level: 5
 
 opening_brace:
   severity: warning

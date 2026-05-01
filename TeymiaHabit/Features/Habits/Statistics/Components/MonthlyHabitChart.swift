@@ -105,11 +105,16 @@ struct MonthlyHabitChart: View {
 
     private var canNavigateToNextMonth: Bool {
         guard !months.isEmpty else { return false }
-        let today = Date()
-        let todayComps = calendar.dateComponents([.year, .month], from: today)
+        
+        let todayComps = calendar.dateComponents([.year, .month], from: Date())
         let currentComps = calendar.dateComponents([.year, .month], from: currentMonth)
-        return !(currentComps.year! > todayComps.year! ||
-            (currentComps.year! == todayComps.year! && currentComps.month! >= todayComps.month!))
+        
+        let tYear = todayComps.year ?? 0
+        let tMonth = todayComps.month ?? 0
+        let cYear = currentComps.year ?? 0
+        let cMonth = currentComps.month ?? 0
+        
+        return cYear < tYear || (cYear == tYear && cMonth < tMonth)
     }
 
     // MARK: - Setup

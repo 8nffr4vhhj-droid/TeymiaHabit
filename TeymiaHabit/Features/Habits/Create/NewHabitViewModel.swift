@@ -49,7 +49,7 @@ final class NewHabitViewModel {
         hours = habit.type == .time ? habit.goal / 3600 : 1
         minutes = habit.type == .time ? (habit.goal % 3600) / 60 : 0
         activeDays = habit.activeDays
-        isReminderEnabled = habit.reminderTimes != nil && !habit.reminderTimes!.isEmpty
+        isReminderEnabled = habit.reminderTimes?.isEmpty == false
         reminderTimes = habit.reminderTimes ?? [Date()]
         startDate = habit.startDate
         selectedIcon = habit.iconName

@@ -101,7 +101,7 @@ struct MonthlyCalendarView: View {
                     }
             }
         }
-//        .tabViewStyle(.page(indexDisplayMode: .never)) TODO
+        .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(height: 280)
         .onAppear {
             generateCalendarDaysIfNeeded(for: currentMonthIndex)
@@ -166,12 +166,23 @@ struct MonthlyCalendarView: View {
     private var canNavigateToNextMonth: Bool {
         guard !months.isEmpty else { return false }
         
-        let currentMonthComponents = calendar.dateComponents([.year, .month], from: Date())
-        let displayedMonthComponents = calendar.dateComponents([.year, .month], from: currentMonth)
+        let current = calendar.dateComponents([.year, .month], from: Date())
+        let displayed = calendar.dateComponents([.year, .month], from: currentMonth)
         
-        return !(displayedMonthComponents.year! > currentMonthComponents.year! ||
-                 (displayedMonthComponents.year! == currentMonthComponents.year! &&
-                  displayedMonthComponents.month! >= currentMonthComponents.month!))
+        let currentYear = current.year ?? 0
+        let currentMonthNum = current.month ?? 0
+        let displayedYear = displayed.year ?? 0
+        let displayedMonthNum = displayed.month ?? 0
+        
+        if displayedYear < currentYear {
+            return true
+        }
+        
+        if displayedYear == currentYear {
+            return displayedMonthNum < currentMonthNum
+        }
+        
+        return false
     }
     
     // MARK: - Setup Methods
@@ -276,12 +287,10 @@ struct MonthlyCalendarView: View {
         var week: [Date?] = Array(repeating: nil, count: 7)
         
         // Fill first week
-        for day in 0..<min(7, numDays + firstWeekday) {
-            if day >= firstWeekday {
-                let dayOffset = day - firstWeekday
-                if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDay) {
-                    week[day] = date
-                }
+        for day in 0..<min(7, numDays + firstWeekday) where day >= firstWeekday {
+            let dayOffset = day - firstWeekday
+            if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDay) {
+                week[day] = date
             }
         }
         days.append(week)

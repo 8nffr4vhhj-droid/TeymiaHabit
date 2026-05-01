@@ -66,7 +66,7 @@ struct SoundView: View {
                         }
                     }
                 ))
-                .tint(Color.toggle)
+                .tint(DS.Colors.appTertiary)
             }
             
             if soundManager.isSoundEnabled {

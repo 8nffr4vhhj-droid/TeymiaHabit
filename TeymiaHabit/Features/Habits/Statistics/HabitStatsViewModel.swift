@@ -35,6 +35,7 @@ class HabitStatsViewModel {
         let isCompletedToday = completedSet.contains(today)
         let isSkippedToday = habit.isSkipped(on: today)
         let isActiveToday = habit.isActiveOnDate(today)
+        
         if isActiveToday && !isCompletedToday && !isSkippedToday {
             if calendar.component(.hour, from: Date()) >= 23 {
                 return 0
@@ -42,13 +43,9 @@ class HabitStatsViewModel {
         }
         
         var streak = 0
-        var currentDate: Date
-        
-        if isCompletedToday || isSkippedToday {
-            currentDate = today
-        } else {
-            currentDate = calendar.date(byAdding: .day, value: -1, to: today)!
-        }
+        var currentDate: Date = (isCompletedToday || isSkippedToday)
+            ? today
+            : calendar.date(byAdding: .day, value: -1, to: today) ?? today
         
         let startLimit = calendar.startOfDay(for: habit.startDate)
         
@@ -56,7 +53,8 @@ class HabitStatsViewModel {
             let isActive = habit.isActiveOnDate(currentDate)
             
             if !isActive {
-                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                guard let nextDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = nextDate
                 continue
             }
             
@@ -65,7 +63,8 @@ class HabitStatsViewModel {
             
             if isCompleted || isSkipped {
                 streak += 1
-                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                guard let nextDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = nextDate
             } else {
                 break
             }

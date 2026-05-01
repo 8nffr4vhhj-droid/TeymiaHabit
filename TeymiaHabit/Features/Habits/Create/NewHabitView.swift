@@ -40,30 +40,34 @@ struct NewHabitContentView: View {
     
     // MARK: - Body
     var body: some View {
-        @Bindable var vm = viewModel
-        habitForm(vm: vm)
-            .navigationTitle(vm.habit == nil ? "create_habit" : "edit_habit")
-//            .navigationBarTitleDisplayMode(.inline) TODO
-            .scrollDismissesKeyboard(.immediately)
-            .toolbar {
-                CloseToolbarButton(dismiss: {
-                    dismiss()
-                })
-                ConfirmationToolbarButton(
-                    action: {
-                        vm.save()
+        NavigationStack {
+            @Bindable var vm = viewModel
+            habitForm(vm: vm)
+                .secondaryBackground()
+                .navigationTitle(vm.habit == nil ? "create_habit" : "edit_habit")
+                .navigationBarTitleDisplayMode(.inline)
+                .scrollDismissesKeyboard(.immediately)
+                .toolbar {
+                    CloseToolbarButton(dismiss: {
                         dismiss()
-                    },
-                    isDisabled: !vm.isFormValid
-                )
-            }
+                    })
+                    ConfirmationToolbarButton(
+                        action: {
+                            vm.save()
+                            dismiss()
+                        },
+                        isDisabled: !vm.isFormValid
+                    )
+                }
+        }
+        .interactiveDismissDisabled()
     }
     
     // MARK: - Form
     @ViewBuilder
     private func habitForm(vm: NewHabitViewModel) -> some View {
         @Bindable var vm = vm
-        Form {
+        List {
             Section {
                 Label {
                     TextField("habit_name", text: $vm.title)
@@ -83,11 +87,12 @@ struct NewHabitContentView: View {
                         Spacer()
                         Image(vm.selectedIcon)
                             .resizable()
-                            .frame(size: DS.Icon.s20)
+                            .frame(size: DS.IconSize.sm)
                             .foregroundStyle(vm.actualColor)
                     }
                 }
             }
+            .rowBackground()
             
             Section {
                 GoalSection(
@@ -97,6 +102,7 @@ struct NewHabitContentView: View {
                     minutes: $vm.minutes
                 )
             }
+            .rowBackground()
             
             Section {
                 RepeatDaysView(activeDays: $vm.activeDays)
@@ -106,8 +112,7 @@ struct NewHabitContentView: View {
                     reminderTimes: $vm.reminderTimes
                 )
             }
+            .rowBackground()
         }
-        .formStyle(.grouped)
     }
-    
 }

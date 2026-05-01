@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor
 @Observable
 final class AppIconManager {
-#if os(iOS)
     var currentIcon: AppIcon
     
     init() {
@@ -28,5 +27,4 @@ final class AppIconManager {
             }
         }
     }
-#endif
 }

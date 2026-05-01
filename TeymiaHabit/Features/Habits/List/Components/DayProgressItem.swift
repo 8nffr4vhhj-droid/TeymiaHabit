@@ -144,7 +144,7 @@ struct DayProgressItem: View, Equatable {
         }
     }
     
-    static func == (lhs: DayProgressItem, rhs: DayProgressItem) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date) &&
         lhs.isSelected == rhs.isSelected &&
         abs(lhs.progress - rhs.progress) < 0.01 &&

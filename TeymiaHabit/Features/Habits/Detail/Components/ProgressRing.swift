@@ -71,7 +71,7 @@ struct ProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(DS.Colors.appSecondary, lineWidth: adaptiveLineWidth)
+                .stroke(DS.Colors.secondaryOpacity, lineWidth: adaptiveLineWidth)
             
             mainProgressRing
             

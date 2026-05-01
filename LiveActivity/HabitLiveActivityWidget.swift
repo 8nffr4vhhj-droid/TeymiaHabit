@@ -90,8 +90,6 @@ struct HabitLiveActivityWidget: Widget {
 struct CompactLiveActivityContent: View {
     let context: ActivityViewContext<HabitActivityAttributes>
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     private var currentProgress: Int {
         if context.state.isTimerRunning, let startTime = context.state.timerStartTime {
             let elapsed = Int(Date().timeIntervalSince(startTime))
@@ -154,8 +152,6 @@ struct CompactLiveActivityContent: View {
 // MARK: - Live Activity Progress Ring
 struct LiveActivityProgressRing: View {
     let context: ActivityViewContext<HabitActivityAttributes>
-    
-    @Environment(\.colorScheme) private var colorScheme
     
     private let ringSize: CGFloat = 52
     private let lineWidth: CGFloat = 6

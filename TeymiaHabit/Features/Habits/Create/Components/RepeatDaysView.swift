@@ -20,7 +20,7 @@ struct RepeatDaysView: View {
                     Text(dayName)
                         .font(.system(size: 12, weight: .semibold))
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(isActive ? Color.blackWhite.gradient : Color.appPrimary.gradient)
+                        .foregroundStyle(isActive ? DS.Colors.onPrimary.gradient : DS.Colors.appTertiary.gradient)
                         .frame(width: 40, height: 40)
                         .background {
                             if isActive {

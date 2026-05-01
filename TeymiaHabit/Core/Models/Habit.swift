@@ -68,7 +68,13 @@ final class Habit: Identifiable {
             guard let data = reminderTimesData else { return nil }
             return try? JSONDecoder().decode([Date].self, from: data)
         }
-        set { reminderTimesData = (newValue != nil && !newValue!.isEmpty) ? try? JSONEncoder().encode(newValue) : nil }
+        set {
+            if let newValue, !newValue.isEmpty {
+                reminderTimesData = try? JSONEncoder().encode(newValue)
+            } else {
+                reminderTimesData = nil
+            }
+        }
     }
     
     // MARK: - Initializer

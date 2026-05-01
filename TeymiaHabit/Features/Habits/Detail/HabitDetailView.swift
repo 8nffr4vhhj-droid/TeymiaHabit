@@ -51,10 +51,11 @@ struct HabitDetailContentView: View {
     
     var body: some View {
         @Bindable var vm = viewModel
-        mainContent(vm: viewModel)
-//            .navigationTitle(habit.title)
-//            .navigationSubtitle("Goal: \(habit.formattedGoal)")
-            .toolbar { toolbarContent(vm: viewModel) }
+        NavigationStack {
+            mainContent(vm: viewModel)
+            .toolbar {
+                toolbarContent(vm: viewModel)
+            }
             .deleteSingleHabitAlert(
                 isPresented: $vm.alertState.isDeleteAlertPresented,
                 habitName: habit.title,
@@ -64,45 +65,62 @@ struct HabitDetailContentView: View {
                 }
             )
             .id(habit.uuid.uuidString)
-            .onDisappear { viewModel.prepareForDeletion() }
+            .onDisappear {
+                viewModel.prepareForDeletion()
+            }
             .onChange(of: date) { _, newDate in
                 viewModel.updateDisplayedDate(newDate)
             }
             .sheet(isPresented: $isEditPresented) {
-                NavigationStack {
-                    NewHabitView()
-                }
+                NewHabitView(habit: habit)
             }
             .sheet(isPresented: $showingStats) {
                 HabitStatisticsView(habit: habit)
             }
+        }
+        .presentationDetents([.fraction(0.7)])
+        .presentationDragIndicator(.visible)
     }
     
     // MARK: - Content
     @ViewBuilder
     private func mainContent(vm: HabitDetailViewModel) -> some View {
-        VStack(spacing: 24) {
-            titleView()
-            HabitProgressView(viewModel: vm, habit: habit)
-            VStack(spacing: 24) {
+        VStack(spacing: DS.Spacing.xxl) {
+            headerView
+                .padding(.horizontal, DS.Spacing.xl)
+            
+            HabitProgressView(vm: vm, habit: habit)
+            
                 actionButtonsSection(viewModel: vm)
+            
                 completeButtonView(viewModel: vm)
                     .disabled(vm.isAlreadyCompleted)
-            }
+                    .padding(.horizontal, DS.Spacing.xl)
         }
-        .padding(.vertical, 16)
+        .padding(.horizontal, DS.Spacing.xl)
     }
     
     @ViewBuilder
-    private func titleView() -> some View {
-        Text(habit.title)
-            .font(DS.Typography.largeTitle)
+    private var headerView: some View {
+        VStack(spacing: DS.Spacing.xs) {
+            Text(habit.title)
+                .font(DS.Typography.largeTitle)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.8)
+                .lineLimit(2)
+            Text("Goal: \(habit.formattedGoal)")
+                .font(DS.Typography.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, DS.Spacing.xl)
     }
     
     @ToolbarContentBuilder
     private func toolbarContent(vm: HabitDetailViewModel) -> some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
-            Button { showingStats = true } label: {
+            Button {
+                showingStats = true
+            } label: {
                 Image(systemName: "chart.bar.fill")
             }
             .tint(.primary)
@@ -149,15 +167,17 @@ struct HabitDetailContentView: View {
     }
     
     private func completeButtonView(viewModel: HabitDetailViewModel) -> some View {
-        Button(action: { viewModel.completeHabit() }) {
+        Button(action: {
+            viewModel.completeHabit()
+        }) {
             Text(viewModel.isAlreadyCompleted ? "completed" : "complete")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(Color.whiteBlack)
-                .frame(maxWidth: .infinity, minHeight: 52)
+                .font(DS.Typography.headline)
+                .foregroundStyle(DS.Colors.onPrimary)
+                .frame(maxWidth: .infinity, minHeight: DS.TouchTarget.large)
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive().tint(habit.actualColor), in: .capsule)
-        .padding(.horizontal, DS.Spacing.s24)
+        .glassEffect(.clear.interactive().tint(habit.actualColor), in: .capsule)
+        .padding(.horizontal, DS.Spacing.xl)
     }
 }

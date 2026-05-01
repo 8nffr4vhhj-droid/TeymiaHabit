@@ -1,4 +1,4 @@
-#if os(iOS)
+#if !targetEnvironment(macCatalyst)
 import SwiftUI
 import ActivityKit
 import WidgetKit

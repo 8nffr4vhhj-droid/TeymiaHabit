@@ -103,9 +103,7 @@ struct YearlyHabitChart: View {
 
     private var canNavigateToNextYear: Bool {
         guard !years.isEmpty else { return false }
-        let todayYear = calendar.dateComponents([.year], from: Date()).year!
-        let displayYear = calendar.dateComponents([.year], from: currentYear).year!
-        return displayYear < todayYear
+        return calendar.compare(currentYear, to: Date(), toGranularity: .year) == .orderedAscending
     }
 
     // MARK: - Helpers

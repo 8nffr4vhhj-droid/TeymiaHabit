@@ -13,15 +13,17 @@ struct TeymiaHabitApp: App {
     @State private var timerService = TimerService()
     @State private var navManager = NavigationManager()
     @State private var habitLiveActivityManager = HabitLiveActivityManager()
+    @State private var appIconManager = AppIconManager()
     
     init() {
-        #if os(iOS)
         AppFont.configureAppearance()
-        #endif
         
-        let schema = Schema([Habit.self, HabitCompletion.self])
-        let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.amanbayserkeev.teymiahabit")!
+        guard let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.amanbayserkeev.teymiahabit") else {
+            fatalError("App Group container not found. Check your entitlements.")
+        }
+        
         let storeURL = groupURL.appendingPathComponent("Library/Application Support/default.store")
+        let schema = Schema([Habit.self, HabitCompletion.self])
         let config = ModelConfiguration(schema: schema, url: storeURL)
         
         do {
@@ -34,7 +36,7 @@ struct TeymiaHabitApp: App {
                 widgetService: widgetSvc
             ))
         } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            fatalError("Failed to create ModelContainer: \(error.localizedDescription)")
         }
     }
     
@@ -50,6 +52,7 @@ struct TeymiaHabitApp: App {
                 .environment(timerService)
                 .environment(navManager)
                 .environment(habitLiveActivityManager)
+                .environment(appIconManager)
                 .onAppear {
                     setupLiveActivities()
                 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ActionButtonsSection: View {
     @Environment(HabitService.self) private var habitService
+    @State private var isShowingPopover = false
     
     let habit: Habit
     let date: Date
@@ -11,16 +12,8 @@ struct ActionButtonsSection: View {
     var onReset: () -> Void
     var onTimerToggle: () -> Void
     
-    @State private var isShowingPopover = false
-    
-    private enum Constants {
-        static let buttonPadding: CGFloat = 10
-        static let playButtonPadding: CGFloat = 12
-        static let spacing: CGFloat = 18
-    }
-    
     var body: some View {
-        HStack(spacing: Constants.spacing) {
+        HStack(spacing: DS.Spacing.lg) {
             if habit.type == .time && isToday {
                 resetButton
                 playPauseButton
@@ -39,16 +32,14 @@ struct ActionButtonsSection: View {
     
     @ViewBuilder
     private var resetButton: some View {
-        Button {
-            onReset()
-        } label: {
+        Button(action: onReset) {
             Image(systemName: "arrow.uturn.backward")
-                .font(.title2)
-                .foregroundStyle(.primary)
-                .padding(Constants.buttonPadding)
+                .font(.system(size: DS.IconSize.md, weight: .medium))
+                .foregroundStyle(DS.Colors.appPrimary)
+                .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .contentShape(.circle)
     }
     
     @ViewBuilder
@@ -57,13 +48,13 @@ struct ActionButtonsSection: View {
             onTimerToggle()
         } label: {
             Image(systemName: isTimerRunning ? "pause.fill" : "play.fill")
-                .font(.largeTitle)
+                .font(.system(size: DS.IconSize.xl))
                 .contentTransition(.symbolEffect(.replace, options: .speed(1.3)))
-                .foregroundStyle(.primary)
-                .padding(Constants.playButtonPadding)
+                .foregroundStyle(DS.Colors.appPrimary)
+                .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .contentShape(.circle)
     }
     
     @ViewBuilder
@@ -71,13 +62,13 @@ struct ActionButtonsSection: View {
         Button {
             isShowingPopover = true
         } label: {
-            Image(systemName: "plus")
-                .font(.title2)
-                .foregroundStyle(.primary)
-                .padding(Constants.buttonPadding)
+            Image(systemName: "plus.arrow.trianglehead.clockwise")
+                .font(.system(size: DS.IconSize.md, weight: .medium))
+                .foregroundStyle(DS.Colors.appPrimary)
+                .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .contentShape(.circle)
         .popover(isPresented: $isShowingPopover) {
             DayProgressPopover(habit: habit, date: date)
                 .environment(habitService)

@@ -11,7 +11,6 @@ struct MainTabView: View {
     var body: some View {
         @Bindable var nav = navManager
         
-        #if os(iOS)
         AnimatedTabView(selection: $nav.selectedTab) {
             tabContent
         } effects: { tab in
@@ -22,13 +21,7 @@ struct MainTabView: View {
             }
         }
         .preferredColorScheme(themeMode.colorScheme)
-//        .tabBarMinimizeBehavior(.onScrollDown) TODO
-        #else
-        TabView(selection: $nav.selectedTab) {
-            tabContent
-        }
-        .preferredColorScheme(themeMode.colorScheme)
-        #endif
+        .tabBarMinimizeBehavior(.onScrollDown)
     }
     
     @TabContentBuilder<AppTab>
@@ -46,7 +39,7 @@ struct MainTabView: View {
         }
         
         Tab.init(AppTab.settings.title, systemImage: AppTab.settings.symbolImage, value: .settings) {
-            SettingsView()
+                SettingsView()
         }
     }
 }

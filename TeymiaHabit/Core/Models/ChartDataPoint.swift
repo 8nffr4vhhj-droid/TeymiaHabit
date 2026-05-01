@@ -11,7 +11,7 @@ struct ChartDataPoint: Identifiable, Equatable {
     
     // MARK: - Equatable
     
-    static func == (lhs: ChartDataPoint, rhs: ChartDataPoint) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
     }
     

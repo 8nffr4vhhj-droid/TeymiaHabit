@@ -1,12 +1,12 @@
 import SwiftData
 import SwiftUI
-#if os(iOS)
+#if !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
 
 @Observable @MainActor
 final class HabitLiveActivityManager {
-    #if os(iOS)
+#if !targetEnvironment(macCatalyst)
     private var activeActivities: [String: Activity<HabitActivityAttributes>] = [:]
     
     init() {}
