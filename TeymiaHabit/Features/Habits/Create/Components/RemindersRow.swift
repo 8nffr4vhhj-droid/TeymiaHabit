@@ -4,12 +4,12 @@ import UserNotifications
 struct RemindersRow: View {
     @Binding var isReminderEnabled: Bool
     @Binding var reminderTimes: [Date]
-
+    
     @Environment(AppDependencyContainer.self) private var appContainer
-
+    
     @State private var isNotificationPermissionAlertPresented = false
     @State private var isProcessingToggle = false
-
+    
     var body: some View {
         Section {
             Toggle(isOn: Binding(
@@ -20,28 +20,26 @@ struct RemindersRow: View {
                         isProcessingToggle = true
                         Task { await handleReminderToggle(newValue) }
                     } else {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        withAnimation(DS.Animations.easeInOut) {
                             isReminderEnabled = newValue
                         }
                     }
                 }
             )) {
-                Label(
-                    title: { Text("reminders") },
-                    icon: {
-                        RowIcon(iconName: "bell.badge.fill", color: .red)
-                            .symbolEffect(.wiggle, value: isReminderEnabled)
-                    }
-                )
+                Label {
+                    Text("reminders")
+                } icon: {
+                    RowIcon(iconName: "bell.badge.fill", color: .red)
+                        .symbolEffect(.wiggle, value: isReminderEnabled)
+                }
             }
-            .tint(DS.Colors.appTertiary)
             .disabled(isProcessingToggle)
-
+            
             if isReminderEnabled {
                 reminderTimesList
                     .transition(.asymmetric(
                         insertion: .move(edge: .top).combined(with: .opacity),
-                        removal:   .move(edge: .top).combined(with: .opacity)
+                        removal: .move(edge: .top).combined(with: .opacity)
                     ))
             }
         }
@@ -51,11 +49,11 @@ struct RemindersRow: View {
         } message: {
             Text("alert_notifications_permission_message")
         }
-        .tint(Color.primary)
+        .tint(DS.Colors.appPrimary)
     }
-
+    
     // MARK: - Reminder Times List
-
+    
     private var reminderTimesList: some View {
         Group {
             ForEach(Array(reminderTimes.indices), id: \.self) { index in
@@ -69,7 +67,7 @@ struct RemindersRow: View {
                     )
                     .labelsHidden()
                     .datePickerStyle(.compact)
-
+                    
                     Button {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             guard reminderTimes.indices.contains(index) else { return }
@@ -81,7 +79,7 @@ struct RemindersRow: View {
                     }
                 }
             }
-
+            
             Button {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     reminderTimes.append(Date())
@@ -95,12 +93,12 @@ struct RemindersRow: View {
             }
         }
     }
-
+    
     // MARK: - Private Helpers
-
+    
     private func handleReminderToggle(_ newValue: Bool) async {
         let isAuthorized = await appContainer.notificationManager.ensureAuthorization()
-
+        
         await MainActor.run {
             isProcessingToggle = false
             withAnimation(.easeInOut(duration: 0.3)) {
@@ -113,7 +111,7 @@ struct RemindersRow: View {
             }
         }
     }
-
+    
     private func openSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)

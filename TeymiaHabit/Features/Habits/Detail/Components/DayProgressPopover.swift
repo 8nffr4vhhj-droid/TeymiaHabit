@@ -83,7 +83,7 @@ struct DayProgressPopover: View {
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive().tint(DS.Colors.appTertiary), in: .capsule)
+        .glassEffect(.regular.interactive(), in: .capsule)
         .padding(.horizontal, DS.Spacing.xl)
         .padding(.bottom, DS.Spacing.reg)
     }

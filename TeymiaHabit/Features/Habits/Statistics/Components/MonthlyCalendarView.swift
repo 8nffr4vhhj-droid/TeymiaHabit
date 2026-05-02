@@ -65,7 +65,7 @@ struct MonthlyCalendarView: View {
             Button(action: showPreviousMonth) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20))
-                    .foregroundStyle(canNavigateToPreviousMonth ? Color.appPrimary.gradient : Color.appPrimary.opacity(0.5).gradient)
+                    .foregroundStyle(canNavigateToPreviousMonth ? DS.Colors.appPrimary.gradient : DS.Colors.appPrimary.opacity(0.5).gradient)
                     .contentShape(Rectangle())
             }
             .disabled(!canNavigateToPreviousMonth)
@@ -83,7 +83,7 @@ struct MonthlyCalendarView: View {
             Button(action: showNextMonth) {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 20))
-                    .foregroundStyle(canNavigateToNextMonth ? Color.appPrimary.gradient : Color.appPrimary.opacity(0.5).gradient)
+                    .foregroundStyle(canNavigateToNextMonth ? DS.Colors.appPrimary.gradient : DS.Colors.appPrimary.opacity(0.5).gradient)
                     .contentShape(Rectangle())
             }
             .disabled(!canNavigateToNextMonth)
@@ -100,7 +100,7 @@ struct MonthlyCalendarView: View {
                 Text(String(weekday.shortName.prefix(1)).capitalized)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.appPrimary.opacity(0.5).gradient)
+                    .foregroundStyle(DS.Colors.appPrimary.opacity(0.5).gradient)
                     .frame(maxWidth: .infinity)
             }
         }

@@ -15,11 +15,9 @@ struct CalendarProgressRing: View {
 
     var body: some View {
         ZStack {
-            // Background track
             Circle()
-                .stroke(DS.Colors.secondaryOpacity, lineWidth: lineWidth)
+                .stroke(DS.Colors.appSecondary.opacity(0.1), lineWidth: lineWidth)
 
-            // Progress arc
             Circle()
                 .trim(from: 0, to: clampedProgress)
                 .stroke(

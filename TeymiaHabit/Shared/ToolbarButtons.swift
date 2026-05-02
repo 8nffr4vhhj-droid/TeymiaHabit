@@ -10,6 +10,7 @@ struct CloseToolbarButton: ToolbarContent {
             } label: {
                 Image(systemName: "xmark")
                     .fontWeight(.semibold)
+                    .foregroundStyle(DS.Colors.appPrimary)
             }
         }
     }
@@ -21,7 +22,7 @@ struct ConfirmationToolbarButton: ToolbarContent {
     
     var body: some ToolbarContent {
         ToolbarItem(placement: .confirmationAction) {
-            Button {
+            Button(role: .confirm) {
                 action()
             } label: {
                 Image(systemName: "checkmark")

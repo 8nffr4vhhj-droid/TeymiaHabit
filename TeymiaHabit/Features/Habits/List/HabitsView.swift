@@ -193,7 +193,7 @@ struct HabitsContentView: View {
                     .padding(.vertical, DS.Spacing.sm)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.clear.tint(DS.Colors.appTertiary).interactive(), in: .capsule)
+                .glassEffect(.regular.interactive(), in: .capsule)
             }
         )
     }

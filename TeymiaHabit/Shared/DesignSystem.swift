@@ -3,10 +3,8 @@ import SwiftUI
 enum DS {
     // MARK: - Colors
     enum Colors {
-        static let appPrimary = Color.appPrimary
-        static let appSecondary = Color.appSecondary
-        static let secondaryOpacity = Color.secondary.opacity(0.1)
-        static let appTertiary = Color.appTertiary
+        static let appPrimary = Color.primary
+        static let appSecondary = Color.secondary
         static let onPrimary = Color.onPrimary
     }
     

@@ -20,12 +20,12 @@ struct RepeatDaysRow: View {
                     Text(dayName)
                         .font(.system(size: 12, weight: .semibold))
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(isActive ? DS.Colors.onPrimary.gradient : DS.Colors.appTertiary.gradient)
+                        .foregroundStyle(isActive ? DS.Colors.onPrimary.gradient : DS.Colors.appSecondary.gradient)
                         .frame(width: 40, height: 40)
                         .background {
                             if isActive {
                                 Circle()
-                                    .fill(.appPrimary.gradient)
+                                    .fill(DS.Colors.appPrimary.gradient)
                             }
                         }
                 }
@@ -40,9 +40,6 @@ struct RepeatDaysRow: View {
     private func toggleDay(_ index: Int) {
         let activeCount = activeDays.filter { $0 }.count
         if activeCount == 1 && activeDays[index] { return }
-        
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            activeDays[index].toggle()
-        }
+        activeDays[index].toggle()
     }
 }

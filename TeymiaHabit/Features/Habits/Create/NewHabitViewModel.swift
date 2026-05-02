@@ -167,30 +167,30 @@ final class NewHabitViewModel {
     // Snapshot captures every user-editable field so hasChanges is accurate.
     // Previously missing: reminderTimes, startDate, iconColor.
     private struct Snapshot: Equatable {
-        let title:             String
-        let type:              HabitType
-        let goal:              Int
-        let activeDays:        [Bool]
+        let title: String
+        let type: HabitType
+        let goal: Int
+        let activeDays: [Bool]
         let isReminderEnabled: Bool
-        let reminderTimes:     [Date]
-        let startDate:         Date
-        let iconName:          String
-        let iconColor:         HabitIconColor
-        let hexColor:          String?
+        let reminderTimes: [Date]
+        let startDate: Date
+        let iconName: String
+        let iconColor: HabitIconColor
+        let hexColor: String?
     }
 
     private func makeSnapshot() -> Snapshot {
         Snapshot(
-            title:             title,
-            type:              selectedType,
-            goal:              effectiveGoal,
-            activeDays:        activeDays,
+            title: title,
+            type: selectedType,
+            goal: effectiveGoal,
+            activeDays: activeDays,
             isReminderEnabled: isReminderEnabled,
-            reminderTimes:     reminderTimes,
-            startDate:         startDate,
-            iconName:          selectedIcon,
-            iconColor:         selectedIconColor,
-            hexColor:          selectedHexColor
+            reminderTimes: reminderTimes,
+            startDate: startDate,
+            iconName: selectedIcon,
+            iconColor: selectedIconColor,
+            hexColor: selectedHexColor
         )
     }
 }

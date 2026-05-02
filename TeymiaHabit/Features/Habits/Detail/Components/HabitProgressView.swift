@@ -53,7 +53,7 @@ struct ProgressIconButton: View {
                 .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.appPrimary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
-                .background(DS.Colors.secondaryOpacity, in: .circle)
+                .background(DS.Colors.appSecondary.opacity(0.1), in: .circle)
         }
         .buttonStyle(.plain)
         .contentShape(.circle)
