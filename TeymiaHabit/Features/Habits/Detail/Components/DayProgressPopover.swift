@@ -44,7 +44,7 @@ struct DayProgressPopover: View {
             Group {
                 if habit.type == .count {
                     TextField("0", text: $inputText)
-                        .font(.system(size: Layout.inputFontSize, weight: .bold, design: .rounded))
+                        .font(.system(size: Layout.inputFontSize, weight: .bold))
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .focused($isInputFocused)

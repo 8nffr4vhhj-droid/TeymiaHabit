@@ -49,7 +49,6 @@ struct RemindersRow: View {
         } message: {
             Text("alert_notifications_permission_message")
         }
-        .tint(DS.Colors.appPrimary)
     }
     
     // MARK: - Reminder Times List

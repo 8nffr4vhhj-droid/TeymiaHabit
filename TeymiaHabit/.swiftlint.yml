@@ -29,8 +29,8 @@ type_name:
     - DS
 
 function_parameter_count:
-  warning: 7
-  error: 14
+  warning: 10
+  error: 13
 
 line_length:
   warning: 120

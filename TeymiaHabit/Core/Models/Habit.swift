@@ -18,9 +18,6 @@ final class Habit: Identifiable {
     var createdAt: Date = Date()
     var startDate: Date = Date()
     
-    @Attribute(.externalStorage) private var skippedDatesData: Data?
-    @Attribute(.externalStorage) private var reminderTimesData: Data?
-    
     @Relationship(deleteRule: .cascade, inverse: \HabitCompletion.habit)
     var completions: [HabitCompletion]?
     
@@ -55,27 +52,8 @@ final class Habit: Identifiable {
         }
     }
     
-    var skippedDates: [Date] {
-        get {
-            guard let data = skippedDatesData else { return [] }
-            return (try? JSONDecoder().decode([Date].self, from: data)) ?? []
-        }
-        set { skippedDatesData = try? JSONEncoder().encode(newValue) }
-    }
-    
-    var reminderTimes: [Date]? {
-        get {
-            guard let data = reminderTimesData else { return nil }
-            return try? JSONDecoder().decode([Date].self, from: data)
-        }
-        set {
-            if let newValue, !newValue.isEmpty {
-                reminderTimesData = try? JSONEncoder().encode(newValue)
-            } else {
-                reminderTimesData = nil
-            }
-        }
-    }
+    var skippedDates: [Date] = []
+    var reminderTimes: [Date]? = nil
     
     // MARK: - Initializer
     init(

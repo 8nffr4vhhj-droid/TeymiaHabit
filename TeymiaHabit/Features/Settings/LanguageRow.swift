@@ -3,15 +3,20 @@ import SwiftUI
 #if !targetEnvironment(macCatalyst)
 struct LanguageRow: View {
     var body: some View {
-        Button(action: openAppSettings) {
+        Button {
+            openAppSettings()
+        } label: {
             HStack {
-                Label(
-                    title: { Text("settings_language") },
-                    icon: { RowIcon(iconName: "globe", color: .blue) }
-                )
+                Label {
+                    Text("settings_language")
+                        .foregroundStyle(DS.Colors.appPrimary)
+                } icon: {
+                    RowIcon(iconName: "globe", color: .blue)
+                }
                 Spacer()
                 Text(currentLanguage)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DS.Colors.appSecondary)
+
             }
         }
     }

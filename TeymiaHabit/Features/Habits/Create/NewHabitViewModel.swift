@@ -58,8 +58,8 @@ final class NewHabitViewModel {
     var isFormValid: Bool {
         let hasTitle = !title.trimmingCharacters(in: .whitespaces).isEmpty
         let hasGoal: Bool = switch selectedType {
-            case .count: goalConfig.parsedCount != nil
-            case .time:  goalConfig.hours > 0 || goalConfig.minutes > 0
+        case .count: goalConfig.parsedCount != nil
+        case .time: goalConfig.hours > 0 || goalConfig.minutes > 0
         }
         return hasTitle && hasGoal
     }

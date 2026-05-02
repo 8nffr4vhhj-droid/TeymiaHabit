@@ -71,7 +71,12 @@ final class HabitLiveActivityManager {
     
     func endActivity(for habitId: String) async {
         guard let activity = activeActivities[habitId] else { return }
-        await activity.end(ActivityContent(state: activity.content.state, staleDate: Date()), dismissalPolicy: .immediate)
+        
+        await activity.end(
+            ActivityContent(state: activity.content.state, staleDate: .now),
+            dismissalPolicy: .immediate
+        )
+        
         activeActivities.removeValue(forKey: habitId)
     }
     

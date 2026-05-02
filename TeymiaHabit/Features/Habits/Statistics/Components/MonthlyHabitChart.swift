@@ -70,7 +70,6 @@ struct MonthlyHabitChart: View {
                         Text("\(calendar.component(.day, from: date))")
                             .font(.caption)
                             .fontWeight(.medium)
-                            .fontDesign(.rounded)
                             .foregroundStyle(DS.Colors.appPrimary.opacity(0.5).gradient)
                     }
                 }

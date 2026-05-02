@@ -16,12 +16,11 @@ struct MainTabView: View {
             tabContent
         } effects: { tab in
             switch tab {
-            case .habits:   [.bounce]
-            case .tasks:    [.bounce]
+            case .habits: [.bounce]
+            case .tasks: [.bounce]
             case .settings: [.rotate]
             }
         }
-        .fontDesign(.rounded)
         .tint(AppTintColor(rawValue: appTintColor)?.color ?? .primary)
         .preferredColorScheme(themeMode.colorScheme)
         .tabBarMinimizeBehavior(.onScrollDown)
@@ -41,7 +40,7 @@ struct MainTabView: View {
 
         Tab(AppTab.tasks.title, systemImage: AppTab.tasks.symbolImage, value: .tasks) {
             NavigationStack {
-                Text("Tasks")
+                Text("tasks")
             }
         }
 
@@ -62,16 +61,16 @@ enum AppTab: AnimatedTabSelectionProtocol {
 
     var symbolImage: String {
         switch self {
-        case .habits:   "checkmark.circle.dotted"
-        case .tasks:    "checklist"
+        case .habits: "checkmark.circle.dotted"
+        case .tasks: "checklist"
         case .settings: "gearshape"
         }
     }
 
     var title: LocalizedStringResource {
         switch self {
-        case .habits:   "tabview_habits"
-        case .tasks:    "tabview_tasks"
+        case .habits: "tabview_habits"
+        case .tasks: "tabview_tasks"
         case .settings: "tabview_settings"
         }
     }
