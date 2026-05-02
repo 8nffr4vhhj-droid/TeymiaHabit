@@ -41,7 +41,7 @@ struct HabitStatisticsView: View {
             .navigationTitle(habit.title)
             .navigationSubtitle("Goal: \(habit.formattedGoal)")
             .toolbar {
-                CloseToolbarButton(dismiss: { dismiss() })
+                CloseToolbarButton()
             }
         }
     }

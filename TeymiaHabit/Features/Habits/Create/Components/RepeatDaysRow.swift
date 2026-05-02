@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RepeatDaysView: View {
+struct RepeatDaysRow: View {
     @Binding var activeDays: [Bool]
     
     private var orderedWeekdays: [Weekday] {

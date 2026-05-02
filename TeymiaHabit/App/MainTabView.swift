@@ -3,42 +3,46 @@ import SwiftData
 
 struct MainTabView: View {
     @AppStorage("themeMode") private var themeMode: ThemeMode = .system
+    @Environment(AppDependencyContainer.self) private var appContainer
     @Environment(\.modelContext) private var modelContext
-    @Environment(NavigationManager.self) private var navManager
-    
+
     @State private var selectedDate: Date = .now
-    
+
     var body: some View {
-        @Bindable var nav = navManager
-        
+        @Bindable var nav = appContainer.navManager
+
         AnimatedTabView(selection: $nav.selectedTab) {
             tabContent
         } effects: { tab in
             switch tab {
-            case .habits: [.bounce]
-            case .tasks: [.bounce]
+            case .habits:   [.bounce]
+            case .tasks:    [.bounce]
             case .settings: [.rotate]
             }
         }
         .preferredColorScheme(themeMode.colorScheme)
         .tabBarMinimizeBehavior(.onScrollDown)
     }
-    
+
     @TabContentBuilder<AppTab>
     private var tabContent: some TabContent<AppTab> {
-        Tab.init(AppTab.habits.title, systemImage: AppTab.habits.symbolImage, value: .habits) {
+        Tab(AppTab.habits.title, systemImage: AppTab.habits.symbolImage, value: .habits) {
             NavigationStack {
-                HabitsView(selectedDate: $selectedDate)
+                HabitsView(
+                    selectedDate: $selectedDate,
+                    appContainer: appContainer,
+                    modelContext: modelContext
+                )
             }
         }
-        
-        Tab.init(AppTab.tasks.title, systemImage: AppTab.tasks.symbolImage, value: .tasks) {
+
+        Tab(AppTab.tasks.title, systemImage: AppTab.tasks.symbolImage, value: .tasks) {
             NavigationStack {
-                Text("Statistics")
+                Text("Tasks")
             }
         }
-        
-        Tab.init(AppTab.settings.title, systemImage: AppTab.settings.symbolImage, value: .settings) {
+
+        Tab(AppTab.settings.title, systemImage: AppTab.settings.symbolImage, value: .settings) {
             NavigationStack {
                 SettingsView()
             }
@@ -46,24 +50,26 @@ struct MainTabView: View {
     }
 }
 
+// MARK: - AppTab
+
 enum AppTab: AnimatedTabSelectionProtocol {
     case habits
     case tasks
     case settings
-    
+
     var symbolImage: String {
         switch self {
-        case .habits: return "checkmark.circle.dotted"
-        case .tasks: return "chart.bar"
-        case .settings: return "gearshape"
+        case .habits:   "checkmark.circle.dotted"
+        case .tasks:    "checklist"
+        case .settings: "gearshape"
         }
     }
-    
+
     var title: LocalizedStringResource {
         switch self {
-        case .habits: return "tabview_habits"
-        case .tasks: return "tabview_statistics"
-        case .settings: return "tabview_settings"
+        case .habits:   "tabview_habits"
+        case .tasks:    "tabview_tasks"
+        case .settings: "tabview_settings"
         }
     }
 }

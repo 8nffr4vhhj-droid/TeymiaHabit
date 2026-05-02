@@ -1,5 +1,42 @@
 import SwiftUI
 
+struct IconRow: View {
+    @Binding var selectedIcon: String
+    @Binding var selectedColor: HabitIconColor
+    @Binding var hexColor: String?
+    
+    var actualColor: Color
+    
+    var body: some View {
+        NavigationLink {
+            IconPickerView(
+                selectedIcon: $selectedIcon,
+                selectedColor: $selectedColor,
+                hexColor: $hexColor
+            )
+        } label: {
+            HStack {
+                Label {
+                    Text("icon")
+                } icon: {
+                    RowIcon(
+                        iconName: "app.specular",
+                        gradientColors: [.purple, .pink]
+                    )
+                }
+                
+                Spacer()
+                
+                Image(selectedIcon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundStyle(actualColor)
+                    .frame(size: DS.IconSize.sm)
+            }
+        }
+    }
+}
+
 struct CategorySection: Identifiable, Hashable {
     let id: String
     let name: String
@@ -49,9 +86,9 @@ struct IconPickerView: View {
         ScrollView {
             if filteredSections.isEmpty {
                 ContentUnavailableView.search(text: searchText)
-                    .padding(.top, 30)
+                    .padding(.top, DS.Spacing.xxl)
             } else {
-                LazyVStack(alignment: .leading, spacing: 20) {
+                LazyVStack(alignment: .leading, spacing: DS.Spacing.md) {
                     ForEach(filteredSections) { section in
                         Section(header: sectionHeader(section.name)) {
                             LazyVGrid(columns: columns, spacing: Layout.gridSpacing) {
@@ -70,7 +107,7 @@ struct IconPickerView: View {
         .safeAreaBar(edge: .bottom) {
             ColorSelectionView(selectedColor: $selectedColor, hexColor: $hexColor)
                 .padding(.horizontal, DS.Spacing.reg)
-                .padding(.bottom, 6)
+                .padding(.bottom, DS.Spacing.xxs)
         }
         .animation(.snappy, value: searchText)
         .navigationTitle("icon")
@@ -226,7 +263,6 @@ struct IconPickerView: View {
             "person.luggage", "person.luggage.fill", "car.side", "car.side.fill", "motorcycle", "motorcycle.fill",
             "circle.phone", "circle.phone.fill", "laptop", "laptop.fill", "tv.retro", "tv.retro.fill",
             "life", "life.fill"
-            
         ])
         ,
         

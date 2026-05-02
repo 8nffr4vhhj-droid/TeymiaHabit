@@ -1,18 +1,17 @@
 import SwiftUI
 
 struct ActionButtonsSection: View {
-    @Environment(HabitService.self) private var habitService
     @State private var isShowingPopover = false
-    
+
     let habit: Habit
     let date: Date
     let isToday: Bool
     let isTimerRunning: Bool
-    
+
     var onReset: () -> Void
     var onTimerToggle: () -> Void
     var onAddProgress: (Int) -> Void
-    
+
     var body: some View {
         HStack(spacing: DS.Spacing.lg) {
             if habit.type == .time && isToday {
@@ -28,10 +27,9 @@ struct ActionButtonsSection: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
-    // MARK: - Button Components
-    
-    @ViewBuilder
+
+    // MARK: - Buttons
+
     private var resetButton: some View {
         Button(action: onReset) {
             Image(systemName: "arrow.uturn.backward")
@@ -42,12 +40,9 @@ struct ActionButtonsSection: View {
         .buttonStyle(.plain)
         .contentShape(.circle)
     }
-    
-    @ViewBuilder
+
     private var playPauseButton: some View {
-        Button {
-            onTimerToggle()
-        } label: {
+        Button(action: onTimerToggle) {
             Image(systemName: isTimerRunning ? "pause.fill" : "play.fill")
                 .font(.system(size: DS.IconSize.xl))
                 .contentTransition(.symbolEffect(.replace, options: .speed(1.3)))
@@ -57,12 +52,9 @@ struct ActionButtonsSection: View {
         .buttonStyle(.plain)
         .contentShape(.circle)
     }
-    
-    @ViewBuilder
+
     private var manualEntryButton: some View {
-        Button {
-            isShowingPopover = true
-        } label: {
+        Button { isShowingPopover = true } label: {
             Image(systemName: "plus.arrow.trianglehead.clockwise")
                 .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.appPrimary)

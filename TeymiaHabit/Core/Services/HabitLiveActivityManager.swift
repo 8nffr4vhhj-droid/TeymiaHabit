@@ -18,7 +18,12 @@ final class HabitLiveActivityManager {
         let habitId = habit.uuid.uuidString
         
         if activeActivities[habitId] != nil {
-            await updateActivity(for: habitId, currentProgress: currentProgress, isTimerRunning: true, timerStartTime: timerStartTime)
+            await updateActivity(
+                for: habitId,
+                currentProgress: currentProgress,
+                isTimerRunning: true,
+                timerStartTime: timerStartTime
+            )
             return
         }
         

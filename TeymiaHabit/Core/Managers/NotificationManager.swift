@@ -21,7 +21,10 @@ final class NotificationManager {
     }
     
     init() {
-        let soundRaw = UserDefaults.standard.string(forKey: "selectedNotificationSound") ?? NotificationSound.system.rawValue
+        let soundRaw = UserDefaults.standard.string(
+            forKey: "selectedNotificationSound"
+        ) ?? NotificationSound.system.rawValue
+        
         self.selectedNotificationSound = NotificationSound(rawValue: soundRaw) ?? .system
         self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
         Task { await refreshPermissionStatus() }

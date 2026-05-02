@@ -14,22 +14,21 @@ struct SoundsRow: View {
 
 struct SoundsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(SoundManager.self) private var soundManager
-    @Environment(NotificationManager.self) private var notificationManager
-    
+    @Environment(AppDependencyContainer.self) private var appContainer
+
     @State private var selectedTab: SoundTab = .completion
-    
+
     enum SoundTab: String, CaseIterable {
         case completion, notification
-        
+
         var localizedName: LocalizedStringResource {
             switch self {
-            case .completion: return "sound_tab_completion"
-            case .notification: return "sound_tab_notification"
+            case .completion:   "sound_tab_completion"
+            case .notification: "sound_tab_notification"
             }
         }
     }
-    
+
     var body: some View {
         List {
             Section {
@@ -42,7 +41,7 @@ struct SoundsView: View {
                 .frame(maxWidth: 500)
                 .listRowBackground(Color.clear)
             }
-            
+
             if selectedTab == .completion {
                 completionSection
             } else {
@@ -51,23 +50,22 @@ struct SoundsView: View {
         }
         .navigationTitle("settings_sounds")
     }
-    
+
     // MARK: - Sections
-    
+
     private var completionSection: some View {
-        Group {
+        let soundManager = appContainer.soundManager
+        return Group {
             Section {
                 Toggle("enable_sounds", isOn: Binding(
                     get: { soundManager.isSoundEnabled },
                     set: { newValue in
-                        withAnimation(.snappy) {
-                            soundManager.setSoundEnabled(newValue)
-                        }
+                        withAnimation(.snappy) { soundManager.setSoundEnabled(newValue) }
                     }
                 ))
                 .tint(DS.Colors.appTertiary)
             }
-            
+
             if soundManager.isSoundEnabled {
                 Section {
                     ForEach(CompletionSound.allCases) { sound in
@@ -75,7 +73,8 @@ struct SoundsView: View {
                             sound: sound,
                             isSelected: soundManager.selectedSound == sound
                         ) {
-                            handleCompletionSelect(sound)
+                            soundManager.playSound(sound)
+                            soundManager.setSelectedSound(sound)
                         }
                     }
                 }
@@ -83,57 +82,44 @@ struct SoundsView: View {
             }
         }
     }
-    
+
     private var notificationSection: some View {
-        Section {
+        let notificationManager = appContainer.notificationManager
+        return Section {
             ForEach(NotificationSound.allCases) { sound in
                 SoundSelectionRowView(
                     sound: sound,
                     isSelected: notificationManager.selectedNotificationSound == sound
                 ) {
-                    handleNotificationSelect(sound)
+                    appContainer.soundManager.playNotificationPreview(sound)
+                    Task {
+                        await notificationManager.setSelectedNotificationSound(
+                            sound,
+                            modelContext: modelContext
+                        )
+                    }
                 }
             }
         }
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
-    
-    // MARK: - Handlers
-    
-    private func handleCompletionSelect(_ sound: CompletionSound) {
-        soundManager.playSound(sound)
-        
-            soundManager.setSelectedSound(sound)
-    }
-    
-    private func handleNotificationSelect(_ sound: NotificationSound) {
-        soundManager.playNotificationPreview(sound)
-        
-            Task {
-                await notificationManager.setSelectedNotificationSound(sound, modelContext: modelContext)
-            }
-    }
 }
+
+// MARK: - Shared Row
 
 struct SoundSelectionRowView<T: HabitSoundProtocol>: View {
     let sound: T
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button {
-            withAnimation(.snappy) {
-                action()
-            }
+            withAnimation(.snappy) { action() }
         } label: {
             HStack {
                 Text(sound.displayName).foregroundStyle(Color.primary)
-                
                 Spacer()
-                
-                if isSelected {
-                    SelectionCheckmark()
-                }
+                if isSelected { SelectionCheckmark() }
             }
         }
     }

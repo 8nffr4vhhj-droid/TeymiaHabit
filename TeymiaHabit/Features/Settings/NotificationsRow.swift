@@ -4,10 +4,12 @@ import SwiftData
 struct NotificationsRow: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(NotificationManager.self) private var manager
+    @Environment(AppDependencyContainer.self) private var appContainer
+
     @State private var isPermissionAlertPresented = false
 
     var body: some View {
+        let manager = appContainer.notificationManager
         Toggle(isOn: Binding(
             get: { manager.notificationsEnabled },
             set: { newValue in
@@ -38,6 +40,7 @@ struct NotificationsRow: View {
 
     @MainActor
     private func handleToggle(to newValue: Bool) async {
+        let manager = appContainer.notificationManager
         if newValue {
             let isAuthorized = await manager.ensureAuthorization()
             if isAuthorized {

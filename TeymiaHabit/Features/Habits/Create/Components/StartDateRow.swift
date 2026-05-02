@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct StartDateSection: View {
+struct StartDateRow: View {
     @Binding var startDate: Date
     
     var body: some View {

@@ -1,168 +1,124 @@
 import SwiftUI
-import SwiftData
+
+// MARK: - Entry Point
 
 struct NewHabitView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(NotificationManager.self) private var notificationManager
-    @Environment(WidgetService.self) private var widgetService
-    
-    var habit: Habit? = nil
-    
+    @Environment(AppDependencyContainer.self) private var appContainer
+    @Environment(\.dismiss) private var dismiss
+
+    var habit: Habit?
+
+    @State private var viewModel: NewHabitViewModel?
+
     var body: some View {
-        NewHabitContentView(
-            habit: habit,
-            modelContext: modelContext,
-            notificationManager: notificationManager,
-            widgetService: widgetService
-        )
+        Group {
+            if let viewModel {
+                NewHabitContentView(viewModel: viewModel, onSave: {
+                    viewModel.save()
+                    dismiss()
+                })
+                .interactiveDismissDisabled(viewModel.hasChanges)
+            }
+        }
+        .task {
+            guard viewModel == nil else { return }
+            viewModel = NewHabitViewModel(
+                habitService: appContainer.habitService,
+                habit: habit
+            )
+        }
     }
-    
 }
+
+// MARK: - Content View
 
 struct NewHabitContentView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: NewHabitViewModel
-    @FocusState private var isHabitNameFocused: Bool
+    @Bindable var viewModel: NewHabitViewModel
+    let onSave: () -> Void
 
-    // MARK: - Init
-    init(
-        habit: Habit?,
-        modelContext: ModelContext,
-        notificationManager: NotificationManager,
-        widgetService: WidgetService
-    ) {
-        _viewModel = State(wrappedValue: NewHabitViewModel(
-            modelContext: modelContext,
-            notificationManager: notificationManager,
-            widgetService: widgetService,
-            habit: habit
-        ))
-    }
-    
-    // MARK: - Body
+    @FocusState private var focusField: NewHabitField?
+
     var body: some View {
         NavigationStack {
-            @Bindable var vm = viewModel
-            habitForm(vm: vm)
-                .navigationTitle(vm.habit == nil ? "create_habit" : "edit_habit")
-                .navigationBarTitleDisplayMode(.inline)
-                .scrollDismissesKeyboard(.immediately)
-                .toolbar {
-                    CloseToolbarButton(dismiss: {
-                        dismiss()
-                    })
-                    ConfirmationToolbarButton(
-                        action: {
-                            vm.save()
-                            dismiss()
-                        },
-                        isDisabled: !vm.isFormValid
-                    )
-                    
-                    ToolbarSpacer(.flexible, placement: .keyboard)
-                    
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button {
-                            isHabitNameFocused = false
-                        } label: {
-                            Image(systemName: "keyboard.chevron.compact.down")
-                        }
-                    }
-                }
-        }
-        .onAppear {
-            DispatchQueue.main.async {
-                isHabitNameFocused = true
+            Form {
+                mainInfoSection
+                goalSection
+                scheduleSection
             }
-        }
-        .interactiveDismissDisabled()
-    }
-    
-    // MARK: - Form
-    @ViewBuilder
-    private func habitForm(vm: NewHabitViewModel) -> some View {
-        @Bindable var vm = vm
-        Form {
-            Section {
-                Label {
-                    HStack {
-                        TextField("habit_name", text: $vm.title)
-                            .fontWeight(.medium)
-                            .focused($isHabitNameFocused)
-                            .onSubmit {
-                                isHabitNameFocused = false
-                            }
-                        
-                        Button(action: {
-                                withAnimation(DS.Animations.spring) {
-                                    vm.title = ""
-                                }
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.secondary.opacity(0.5))
-                                    .font(.system(size: DS.IconSize.sm))
-                            }
-                            .buttonStyle(.plain)
-                            .opacity(vm.title.isEmpty ? 0 : 1)
-                            .scaleEffect(vm.title.isEmpty ? 0.001 : 1)
-                            .animation(DS.Animations.spring, value: vm.title.isEmpty)
-                            .disabled(vm.title.isEmpty)
-                    }
-                    .contentShape(.rect)
-                } icon: {
-                    RowIcon(iconName: "applepencil.and.scribble", color: .gray)
-                }
-                
-                NavigationLink {
-                    IconPickerView(
-                        selectedIcon: $vm.selectedIcon,
-                        selectedColor: $vm.selectedIconColor,
-                        hexColor: $vm.selectedHexColor
-                    )
-                } label: {
-                    HStack {
-                        Label {
-                            Text("icon")
-                        } icon: {
-                            RowIcon(
-                                iconName: "app.specular",
-                                gradientColors: [.blue, .purple, .pink]
-                            )
-                        }
-                        
-                        Spacer()
-                        
-                        Image(vm.selectedIcon)
-                            .resizable()
-                            .frame(size: DS.IconSize.sm)
-                            .foregroundStyle(vm.actualColor)
-                    }
-                }
+            .navigationTitle(viewModel.habit == nil ? "create_habit" : "edit_habit")
+            .navigationBarTitleDisplayMode(.inline)
+            .scrollDismissesKeyboard(.immediately)
+            .toolbar {
+                navigationToolbar
+                keyboardToolbar
             }
-            
-            Section {
-                GoalSection(
-                    selectedType: $vm.selectedType,
-                    countGoal: $vm.countGoal,
-                    hours: $vm.hours,
-                    minutes: $vm.minutes
-                )
-            }
-            
-            Section {
-                RepeatDaysView(activeDays: $vm.activeDays)
-                StartDateSection(startDate: $vm.startDate)
-                ReminderSection(
-                    isReminderEnabled: $vm.isReminderEnabled,
-                    reminderTimes: $vm.reminderTimes
-                )
+            .onAppear {
+                focusField = .title
             }
         }
     }
 }
 
-enum NewHabitField {
-    case title
-    case count
+// MARK: - Toolbar
+
+private extension NewHabitContentView {
+
+    @ToolbarContentBuilder
+    var navigationToolbar: some ToolbarContent {
+        CloseToolbarButton()
+        ConfirmationToolbarButton(
+            action: onSave,
+            isDisabled: !viewModel.isFormValid
+        )
+    }
+
+    @ToolbarContentBuilder
+    var keyboardToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button {
+                focusField = nil
+            } label: {
+                Image(systemName: "keyboard.chevron.compact.down")
+            }
+        }
+    }
+}
+
+// MARK: - Sections
+
+private extension NewHabitContentView {
+
+    var mainInfoSection: some View {
+        Section {
+            HabitNameRow(title: $viewModel.title, focus: $focusField)
+            IconRow(
+                selectedIcon: $viewModel.selectedIcon,
+                selectedColor: $viewModel.selectedIconColor,
+                hexColor: $viewModel.selectedHexColor,
+                actualColor: viewModel.actualColor
+            )
+        }
+    }
+
+    var goalSection: some View {
+        Section {
+            GoalRow(
+                selectedType: $viewModel.selectedType,
+                config: $viewModel.goalConfig,
+                focus: $focusField
+            )
+        }
+    }
+
+    var scheduleSection: some View {
+        Section {
+            RepeatDaysRow(activeDays: $viewModel.activeDays)
+            StartDateRow(startDate: $viewModel.startDate)
+            RemindersRow(
+                isReminderEnabled: $viewModel.isReminderEnabled,
+                reminderTimes: $viewModel.reminderTimes
+            )
+        }
+    }
 }

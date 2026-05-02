@@ -1,46 +1,53 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Entry Point
+//
+// HabitsView receives appContainer explicitly from MainTabView where @Environment
+// is already resolved. This is the correct SwiftUI pattern for initializing
+// @Observable ViewModels that depend on environment values — @Environment is not
+// available during View.init(), only during body evaluation.
+
 struct HabitsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(HabitService.self) private var habitService
-    @Environment(SoundManager.self) private var soundManager
-    @Environment(TimerService.self) private var timerService
-    @Environment(WidgetService.self) private var widgetService
-    @Environment(NotificationManager.self) private var notificationManager
-    
     @Binding var selectedDate: Date
-    
+    @State private var vm: HabitsViewModel
+
+    init(selectedDate: Binding<Date>, appContainer: AppDependencyContainer, modelContext: ModelContext) {
+        self._selectedDate = selectedDate
+        self._vm = State(wrappedValue: HabitsViewModel(
+            modelContext: modelContext,
+            habitService: appContainer.habitService,
+            notificationManager: appContainer.notificationManager,
+            soundManager: appContainer.soundManager,
+            widgetService: appContainer.widgetService,
+            timerService: appContainer.timerService
+        ))
+    }
+
     var body: some View {
-        HabitsContentView(
-            selectedDate: $selectedDate,
-            viewModel: HabitsViewModel(
-                modelContext: modelContext,
-                habitService: habitService,
-                notificationManager: notificationManager,
-                soundManager: soundManager,
-                widgetService: widgetService,
-                timerService: timerService
-            )
-        )
+        HabitsContentView(selectedDate: $selectedDate, vm: vm)
     }
 }
 
+// MARK: - Content View
+
 struct HabitsContentView: View {
     @Query(sort: \Habit.displayOrder) private var allHabits: [Habit]
-    @Environment(NavigationManager.self) private var navManager
+    @Environment(AppDependencyContainer.self) private var appContainer
+
     @Binding var selectedDate: Date
     @State private var vm: HabitsViewModel
     @State private var isEditMode: EditMode = .inactive
     @State private var selectedHabit: Habit?
     @State private var showingNewHabit = false
-    @State private var habitToEdit: Habit? = nil
-        
-    init(selectedDate: Binding<Date>, viewModel: HabitsViewModel) {
+    @State private var habitToEdit: Habit?
+
+    init(selectedDate: Binding<Date>, vm: HabitsViewModel) {
         self._selectedDate = selectedDate
-        self._vm = State(wrappedValue: viewModel)
+        self._vm = State(wrappedValue: vm)
     }
-    
+
     var body: some View {
         Group {
             if allHabits.isEmpty {
@@ -55,22 +62,23 @@ struct HabitsContentView: View {
             }
         }
         .sheet(isPresented: $showingNewHabit) {
-                NewHabitView()
+            NewHabitView()
         }
         .sheet(item: $habitToEdit) { habit in
-                NewHabitView(habit: habit)
+            NewHabitView(habit: habit)
         }
         .sheet(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit, date: selectedDate)
         }
-        .onChange(of: navManager.habitToOpen) { _, habit in
+        .onChange(of: appContainer.navManager.habitToOpen) { _, habit in
             guard let habit else { return }
             selectedHabit = habit
-            navManager.habitToOpen = nil
+            appContainer.navManager.habitToOpen = nil
         }
     }
-    
+
     // MARK: - Toolbar
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         if !vm.allBaseHabits.isEmpty {
@@ -85,7 +93,7 @@ struct HabitsContentView: View {
                 }
             }
         }
-        
+
         if !Calendar.current.isDateInToday(selectedDate) {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { selectedDate = Date() } label: {
@@ -94,9 +102,9 @@ struct HabitsContentView: View {
                 }
             }
         }
-        
+
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
-        
+
         ToolbarItem(placement: .topBarTrailing) {
             Button { showingNewHabit = true } label: {
                 Image(systemName: "plus")
@@ -104,8 +112,9 @@ struct HabitsContentView: View {
             }
         }
     }
-    
+
     // MARK: - Habits List
+
     private var habitsList: some View {
         List {
             habitListContent
@@ -118,7 +127,7 @@ struct HabitsContentView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar { toolbarContent }
     }
-    
+
     @ViewBuilder
     private var habitListContent: some View {
         Section {
@@ -127,7 +136,7 @@ struct HabitsContentView: View {
         .listRowInsets(EdgeInsets())
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
-        
+
         ForEach(vm.activeHabits(for: selectedDate)) { habit in
             HabitCard(habit: habit, date: selectedDate, onEdit: {
                 habitToEdit = habit
@@ -153,8 +162,9 @@ struct HabitsContentView: View {
             vm.moveHabits(from: source, to: destination, date: selectedDate)
         }
     }
-    
+
     // MARK: - Empty View
+
     private var emptyView: some View {
         ContentUnavailableView(
             label: {
@@ -187,8 +197,9 @@ struct HabitsContentView: View {
             }
         )
     }
-    
+
     // MARK: - Swipe Actions
+
     @ViewBuilder
     private func swipeActions(for habit: Habit) -> some View {
         let isCompleted = habit.progressForDate(selectedDate) >= habit.goal
@@ -196,7 +207,7 @@ struct HabitsContentView: View {
             Label("", systemImage: isCompleted ? "arrow.uturn.backward" : "checkmark")
         }
         .tint(isCompleted ? .red : .green)
-        
+
         let isSkipped = habit.isSkipped(on: selectedDate)
         Button { vm.toggleSkip(for: habit, date: selectedDate) } label: {
             Label("", systemImage: isSkipped ? "arrow.left" : "arrow.right")

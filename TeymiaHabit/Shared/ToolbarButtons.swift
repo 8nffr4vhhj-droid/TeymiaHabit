@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CloseToolbarButton: ToolbarContent {
-    let dismiss: () -> Void
+    @Environment(\.dismiss) private var dismiss
     
     var body: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
