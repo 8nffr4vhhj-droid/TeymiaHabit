@@ -9,57 +9,22 @@ struct HabitListRow: View {
 
     let habit: Habit
     let date: Date
-
-    // MARK: - Computed Properties
-
-    private var isTimerActive: Bool {
-        guard habit.modelContext != nil,
-              habit.type == .time,
-              Calendar.current.isDateInToday(date)
-        else { return false }
-        return appContainer.timerService.isTimerRunning(for: habit.uuid.uuidString)
-    }
-
-    private var cardProgress: Int {
-        guard habit.modelContext != nil else { return 0 }
-
-        if let tempValue = vm.temporaryProgress[habit.uuid] {
-            return tempValue
-        }
-
-        // Reading updateTrigger subscribes this view to timer ticks
-        _ = appContainer.timerService.updateTrigger
-
-        if isTimerActive {
-            return appContainer.timerService.getLiveProgress(for: habit.uuid.uuidString)
-                ?? habit.progressForDate(date)
-        }
-
-        return habit.progressForDate(date)
-    }
-
-    private var cardCompletionPercentage: Double {
-        guard habit.goal > 0 else { return 0 }
-        return Double(cardProgress) / Double(habit.goal)
-    }
-
-    // MARK: - Body
+    let namespace: Namespace.ID
 
     var body: some View {
-        HStack(spacing: 12) {
-            HabitIconView(iconName: habit.iconName, color: habit.actualColor)
+        HStack(spacing: DS.Spacing.sm) {
+            HabitIconView(iconName: habit.iconName, color: habit.iconColor.baseColor)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(habit.title)
-                    .font(.headline)
+                    .font(DS.AppFont.headline)
 
                 Text("\(habit.formatProgress(cardProgress)) | \(habit.formattedGoal)")
-                    .font(.subheadline).monospacedDigit()
-                    .fontWeight(.medium)
+                    .font(DS.AppFont.subheadline).monospacedDigit()
                     .contentTransition(.numericText())
-                    .animation(.spring, value: cardProgress)
+                    .animation(DS.Animations.bouncy, value: cardProgress)
             }
-            .foregroundStyle(.primary)
+            .foregroundStyle(DS.Colors.primary)
             .lineLimit(1)
 
             Spacer()
@@ -81,11 +46,34 @@ struct HabitListRow: View {
         }
         .padding(.horizontal, DS.Spacing.reg)
         .padding(.vertical, DS.Spacing.sm)
+        .matchedTransitionSource(id: habit.id, in: namespace)
         .onChange(of: appContainer.timerService.updateTrigger) { _, _ in
             if isTimerActive {
                 vm.checkCompletionForActiveTimer(habit, date: date)
             }
         }
+    }
+
+    // MARK: - Computed Properties
+
+    private var isTimerActive: Bool {
+        guard habit.modelContext != nil,
+              habit.type == .time,
+              Calendar.current.isDateInToday(date)
+        else { return false }
+        return appContainer.timerService.isTimerRunning(for: habit.uuid.uuidString)
+    }
+
+
+    private var cardProgress: Int {
+        _ = appContainer.timerService.updateTrigger
+
+        return vm.getEffectiveProgress(for: habit, on: date)
+    }
+
+    private var cardCompletionPercentage: Double {
+        guard habit.goal > 0 else { return 0 }
+        return Double(cardProgress) / Double(habit.goal)
     }
 }
 
@@ -97,27 +85,36 @@ struct HabitCard: View {
     let habit: Habit
     let date: Date
     var onEdit: (() -> Void)?
+    let namespace: Namespace.ID
 
     @State private var habitToDelete: Habit?
 
-    private let cardShape = RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
+    private let cardShape = RoundedRectangle(cornerRadius: DS.Radius.lg)
+    private let cardPreview = RoundedRectangle(cornerRadius: DS.Radius.md)
+    private let contextMenuTint = DS.Colors.primary
 
     private var isSkipped: Bool { habit.isSkipped(on: date) }
 
     var body: some View {
-        HabitListRow(habit: habit, date: date)
-            .glassEffect(.regular, in: cardShape)
-            .contentShape(cardShape)
-            .contextMenu {
-                skipButton
-                editButton
-                archiveButton
-                Divider()
-                deleteButton
-            }
-            .deleteHabitAlert(habit: $habitToDelete) { habit in
-                vm.deleteHabit(habit)
-            }
+        HabitListRow(
+            habit: habit,
+            date: date,
+            namespace: namespace
+        )
+        .glassEffect(.regular, in: cardShape)
+        .contentShape(cardShape)
+        .contentShape(.dragPreview, cardPreview)
+        .contentShape(.contextMenuPreview, cardPreview)
+        .contextMenu {
+            skipButton
+            editButton
+            archiveButton
+            Divider()
+            deleteButton
+        }
+        .deleteHabitAlert(habit: $habitToDelete) { habit in
+            vm.deleteHabit(habit)
+        }
     }
 
     // MARK: - Context Menu
@@ -131,7 +128,7 @@ struct HabitCard: View {
                 systemImage: isSkipped ? "arrow.left" : "arrow.right"
             )
         }
-        .tint(.primary)
+        .tint(contextMenuTint)
     }
 
     private var editButton: some View {
@@ -140,7 +137,7 @@ struct HabitCard: View {
         } label: {
             Label("button_edit", systemImage: "pencil")
         }
-        .tint(.primary)
+        .tint(contextMenuTint)
     }
 
     private var archiveButton: some View {
@@ -149,7 +146,7 @@ struct HabitCard: View {
         } label: {
             Label("archive", systemImage: "archivebox")
         }
-        .tint(.primary)
+        .tint(contextMenuTint)
     }
 
     private var deleteButton: some View {

@@ -7,7 +7,7 @@ struct RateRow: View {
         Button {
             openURL(AppConfig.rateAppURL)
         } label: {
-            AboutLabel(title: "settings_rate", icon: "star.fill", color: .yellowOrange)
+            AboutLabel(title: "settings_rate", icon: "star.fill", color: .appYellow)
         }
     }
 }

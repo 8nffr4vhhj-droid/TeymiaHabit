@@ -36,7 +36,7 @@ struct ProgressRing: View {
         static let gradientEndAngle: Double = 270
 
         // Visuals
-        static let capShadowColor = Color.black.opacity(0.2)
+        static let capShadowColor = Color.black.opacity(0.07)
         static let capShadowRadius: CGFloat = 4
         static let capShadowXOffsetRatio: CGFloat = 2.5
 
@@ -115,17 +115,28 @@ private extension ProgressRing {
                 .rotationEffect(.degrees(Metrics.startAngle))
                 .rotationEffect(.degrees(Metrics.fullCircle * (progress - Metrics.overflowThreshold)))
 
-            Circle()
-                .frame(width: adaptiveLineWidth, height: adaptiveLineWidth)
-                .offset(y: -size / 2)
-                .foregroundStyle(ringColors.light)
-                .shadow(
-                    color: Metrics.capShadowColor,
-                    radius: Metrics.capShadowRadius,
-                    x: adaptiveLineWidth / Metrics.capShadowXOffsetRatio,
-                    y: 0
-                )
-                .rotationEffect(.degrees(Metrics.fullCircle * progress))
+            ZStack {
+                Circle()
+                    .frame(width: adaptiveLineWidth, height: adaptiveLineWidth)
+                    .offset(y: -size / 2)
+                    .foregroundStyle(ringColors.light)
+                    .mask(
+                        LinearGradient(
+                            colors: [.clear, .white, .white],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: adaptiveLineWidth, height: adaptiveLineWidth)
+                        .offset(y: -size / 2)
+                    )
+                    .shadow(
+                        color: Metrics.capShadowColor,
+                        radius: Metrics.capShadowRadius,
+                        x: adaptiveLineWidth / Metrics.capShadowXOffsetRatio,
+                        y: 0
+                    )
+                    .rotationEffect(.degrees(Metrics.fullCircle * progress))
+            }
         }
         .animation(reduceMotion ? nil : Metrics.animation, value: progress)
     }
@@ -160,7 +171,12 @@ private extension ProgressRing {
     var checkmarkIcon: some View {
         Image(systemName: "checkmark")
             .font(.system(size: size * Metrics.checkmarkSizeRatio, weight: .bold))
-            .foregroundStyle(habit.actualColor.gradient)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [ringColors.light, ringColors.dark],
+                    startPoint: .topTrailing, endPoint: .bottomLeading
+                )
+            )
             .transition(.symbolEffect(.drawOn))
     }
 
@@ -178,7 +194,46 @@ private extension ProgressRing {
             .minimumScaleFactor(Metrics.minimumScaleFactor)
             .lineLimit(Metrics.lineLimit)
             .frame(width: size * Metrics.textFrameWidthRatio, height: size * Metrics.textFrameHeightRatio)
-//            .contentTransition(.numericText())
-//            .animation(.spring, value: currentValue)
+            .contentTransition(.numericText())
+            .animation(DS.Animations.bouncy, value: currentValue)
+    }
+}
+
+#Preview {
+    let habit = Habit(
+        title: "Exercise",
+        type: .count,
+        goal: 10,
+        iconName: "book",
+        iconColor: .lusciousLime
+    )
+
+    let size: CGFloat = 200
+
+    VStack(spacing: 60) {
+        ProgressRing(
+            progress: 0.95,
+            currentValue: "7",
+            isCompleted: false,
+            isExceeded: false,
+            habit: habit,
+            size: size
+        )
+        ProgressRing(
+            progress: 1.95,
+            currentValue: "7",
+            isCompleted: false,
+            isExceeded: false,
+            habit: habit,
+            size: size
+        )
+        ProgressRing(
+            progress: 1.1,
+            currentValue: "7",
+            isCompleted: false,
+            isExceeded: false,
+            habit: habit,
+            size: size
+        )
     }
 }

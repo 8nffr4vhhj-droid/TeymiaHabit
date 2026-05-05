@@ -48,9 +48,9 @@ func habitBarColor(for dataPoint: ChartDataPoint, habit: Habit) -> AnyGradient {
     }
 
     if dataPoint.isCompleted || dataPoint.isOverAchieved {
-        return habit.actualColor.gradient
+        return habit.iconColor.baseColor.gradient
     } else {
-        return habit.actualColor.opacity(0.8).gradient
+        return habit.iconColor.baseColor.opacity(0.8).gradient
     }
 }
 
@@ -87,7 +87,7 @@ func chartTotalFormatted(chartData: [ChartDataPoint], habitType: HabitType) -> S
     return habitType == .time ? total.formattedAsChartDuration() : "\(total)"
 }
 
-// MARK: - Chart Container (iOS TabView / macOS static)
+// MARK: - Chart Container
 
 /// Platform-adaptive chart container: swipeable TabView on iOS, static on macOS
 struct ChartContainer<Content: View>: View {

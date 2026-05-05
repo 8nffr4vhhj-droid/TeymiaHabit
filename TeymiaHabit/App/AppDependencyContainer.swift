@@ -22,7 +22,8 @@ final class AppDependencyContainer {
         self.habitService = HabitService(
             modelContext: modelContext,
             widgetService: widgetService,
-            notificationManager: notificationManager
+            notificationManager: notificationManager,
+            timerService: timerService
         )
     }
 }

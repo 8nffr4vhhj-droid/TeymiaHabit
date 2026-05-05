@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LanguageRow: View {
     var body: some View {
-#if !targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
         EmptyView()
 #else
         Button {

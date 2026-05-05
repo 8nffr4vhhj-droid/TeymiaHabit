@@ -58,14 +58,14 @@ enum DS {
     enum Animations {
         static let spring = Animation.spring(response: 0.6, dampingFraction: 0.7)
         static let bouncy = Animation.bouncy(duration: 0.5, extraBounce: 0.1)
-        static let snappy = Animation.snappy(duration: 0.3)
-        static let easeInOut = Animation.easeInOut(duration: 0.35)
+        static let snappy = Animation.snappy(duration: 0.5)
+        static let easeInOut = Animation.easeInOut(duration: 0.4)
     }
 
     // MARK: - Typography
     enum AppFont {
         private static func appFont(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-            .system(style, design: .default).weight(weight)
+            .system(style, design: .rounded).weight(weight)
         }
 
         static let largeTitle = appFont(.largeTitle, weight: .bold)

@@ -1,6 +1,30 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - AppTab
+
+enum AppTab: AnimatedTabSelectionProtocol {
+    case habits
+    case statistics
+    case settings
+
+    var symbolImage: String {
+        switch self {
+        case .habits: "checkmark.circle.dotted"
+        case .statistics: "chart.bar"
+        case .settings: "gearshape"
+        }
+    }
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .habits: "tabview_habits"
+        case .statistics: "tabview_statistics"
+        case .settings: "tabview_settings"
+        }
+    }
+}
+
 struct MainTabView: View {
     @AppStorage("themeMode") private var themeMode: ThemeMode = .system
     @AppStorage("appTintColor") private var appTintColor: String = AppTintColor.primary.rawValue
@@ -21,6 +45,7 @@ struct MainTabView: View {
             case .settings: [.rotate]
             }
         }
+        .fontDesign(.rounded)
         .tint(AppTintColor(rawValue: appTintColor)?.color ?? .primary)
         .preferredColorScheme(themeMode.colorScheme)
         .tabBarMinimizeBehavior(.onScrollDown)
@@ -48,30 +73,6 @@ struct MainTabView: View {
             NavigationStack {
                 SettingsView()
             }
-        }
-    }
-}
-
-// MARK: - AppTab
-
-enum AppTab: AnimatedTabSelectionProtocol {
-    case habits
-    case statistics
-    case settings
-
-    var symbolImage: String {
-        switch self {
-        case .habits: "checkmark.circle.dotted"
-        case .statistics: "chart.bar"
-        case .settings: "gearshape"
-        }
-    }
-
-    var title: LocalizedStringResource {
-        switch self {
-        case .habits: "tabview_habits"
-        case .statistics: "tabview_statistics"
-        case .settings: "tabview_settings"
         }
     }
 }

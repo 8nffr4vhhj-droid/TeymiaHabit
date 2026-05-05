@@ -28,6 +28,7 @@ struct ConfirmationToolbarButton: ToolbarContent {
                 Image(systemName: "checkmark")
                     .fontWeight(.semibold)
             }
+            .buttonStyle(.glassProminent)
             .disabled(isDisabled)
         }
     }

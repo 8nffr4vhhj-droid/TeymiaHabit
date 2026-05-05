@@ -11,7 +11,6 @@ final class HabitsViewModel {
     private let notificationManager: NotificationManager
 
     var allBaseHabits: [Habit] = []
-    var temporaryProgress: [UUID: Int] = [:]
 
     init(
         modelContext: ModelContext,
@@ -41,6 +40,10 @@ final class HabitsViewModel {
 
     // MARK: - Actions
 
+    func getEffectiveProgress(for habit: Habit, on date: Date) -> Int {
+        return habitService.effectiveProgress(for: habit, on: date)
+    }
+
     private func handleResult(_ didComplete: Bool) {
         if didComplete { soundManager.playCompletionSound() }
     }
@@ -48,8 +51,11 @@ final class HabitsViewModel {
     func handleRingTap(on habit: Habit, date: Date) {
         switch habit.type {
         case .count:
-            let current = temporaryProgress[habit.uuid] ?? habit.progressForDate(date)
-            temporaryProgress[habit.uuid] = current + 1
+            let current = habitService.getTemporaryProgress(for: habit.uuid) ?? habit.progressForDate(date)
+            let newProgress = current + 1
+
+            habitService.setTemporaryProgress(for: habit.uuid, progress: newProgress)
+
             let result = habitService.addProgress(1, to: habit, date: date)
             handleResult(result)
 
@@ -57,7 +63,7 @@ final class HabitsViewModel {
             let habitId = habit.uuid.uuidString
             if timerService.isTimerRunning(for: habitId) {
                 if let finalProgress = timerService.stopTimer(for: habitId) {
-                    temporaryProgress[habit.uuid] = finalProgress
+                    habitService.setTemporaryProgress(for: habit.uuid, progress: finalProgress)
                     let result = habitService.updateProgress(to: finalProgress, for: habit, date: date)
                     handleResult(result)
                 }
@@ -66,6 +72,7 @@ final class HabitsViewModel {
                 _ = timerService.startTimer(for: habitId, baseProgress: current)
             }
         }
+
         saveAndReloadWithDebounce(for: habit.uuid)
     }
 
@@ -138,7 +145,7 @@ final class HabitsViewModel {
         widgetService.reloadWidgetsAfterDataChange()
         Task {
             try? await Task.sleep(for: .seconds(0.6))
-            temporaryProgress.removeValue(forKey: uuid)
+            habitService.clearTemporaryProgress(for: uuid)
         }
     }
 }

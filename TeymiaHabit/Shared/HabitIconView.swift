@@ -6,22 +6,19 @@ struct HabitIconView: View {
     var size: CGFloat = DS.IconSize.sm
     var showBackground: Bool = true
 
+    private static let backgroundScale: CGFloat  = 2.0
+    private static let backgroundOpacity: Double = 0.15
     private let fallbackIcon = "book"
-
-    private enum Layout {
-        static let backgroundOpacity: Double = 0.15
-        static let backgroundScale: CGFloat  = 2.0
-    }
 
     var body: some View {
         ZStack {
             if showBackground {
                 Circle()
-                    .fill(color.opacity(Layout.backgroundOpacity))
+                    .fill(color.opacity(Self.backgroundOpacity))
             }
             resolvedImage
         }
-        .frame(size: size * Layout.backgroundScale)
+        .frame(size: size * Self.backgroundScale)
     }
 
     private var resolvedImage: some View {

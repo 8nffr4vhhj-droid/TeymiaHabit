@@ -3,16 +3,12 @@ import SwiftUI
 struct IconRow: View {
     @Binding var selectedIcon: String
     @Binding var selectedColor: HabitIconColor
-    @Binding var hexColor: String?
-
-    var actualColor: Color
 
     var body: some View {
         NavigationLink {
             IconPickerView(
                 selectedIcon: $selectedIcon,
-                selectedColor: $selectedColor,
-                hexColor: $hexColor
+                selectedColor: $selectedColor
             )
         } label: {
             HStack {
@@ -30,7 +26,7 @@ struct IconRow: View {
                 Image(selectedIcon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(actualColor)
+                    .foregroundStyle(selectedColor.baseColor)
                     .frame(size: DS.IconSize.sm)
             }
         }
@@ -38,10 +34,9 @@ struct IconRow: View {
 }
 
 struct IconPickerView: View {
-    // MARK: - Bindings
+
     @Binding var selectedIcon: String
     @Binding var selectedColor: HabitIconColor
-    @Binding var hexColor: String?
     @State private var searchText: String = ""
 
     private enum Layout {
@@ -66,11 +61,6 @@ struct IconPickerView: View {
         }
     }
 
-    private var activeColor: Color {
-        if let hex = hexColor { return Color(hex: hex) }
-        return selectedColor.baseColor
-    }
-
     var body: some View {
         ScrollView {
             if filteredSections.isEmpty {
@@ -92,14 +82,14 @@ struct IconPickerView: View {
                 .padding(.vertical, DS.Spacing.reg)
             }
         }
+        .navigationTitle("icon")
+        .animation(DS.Animations.snappy, value: searchText)
         .sensoryFeedback(.selection, trigger: selectedIcon)
         .safeAreaBar(edge: .bottom) {
-            ColorSelectionView(selectedColor: $selectedColor, hexColor: $hexColor)
+            ColorSelectionView(selectedColor: $selectedColor)
                 .padding(.horizontal, DS.Spacing.reg)
                 .padding(.bottom, DS.Spacing.xxs)
         }
-        .animation(.snappy, value: searchText)
-        .navigationTitle("icon")
         .searchable(text: $searchText)
     }
 
@@ -124,7 +114,7 @@ struct IconPickerView: View {
         } label: {
             ZStack {
                 Circle()
-                    .fill(isSelected ? activeColor : DS.Colors.secondary.opacity(0.1))
+                    .fill(isSelected ? selectedColor.baseColor : DS.Colors.secondary.opacity(0.1))
 
                 Image(icon)
                     .resizable()

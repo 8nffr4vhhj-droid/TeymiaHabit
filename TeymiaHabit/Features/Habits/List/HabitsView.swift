@@ -1,13 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Entry Point
-//
-// HabitsView receives appContainer explicitly from MainTabView where @Environment
-// is already resolved. This is the correct SwiftUI pattern for initializing
-// @Observable ViewModels that depend on environment values — @Environment is not
-// available during View.init(), only during body evaluation.
-
 struct HabitsView: View {
     @Environment(\.modelContext) private var modelContext
     @Binding var selectedDate: Date
@@ -33,19 +26,23 @@ struct HabitsView: View {
 // MARK: - Content View
 
 struct HabitsContentView: View {
+    let vm: HabitsViewModel
+
     @Query(sort: \Habit.displayOrder) private var allHabits: [Habit]
     @Environment(AppDependencyContainer.self) private var appContainer
 
+    @Namespace private var habitCardAnimation
+
     @Binding var selectedDate: Date
-    @State private var vm: HabitsViewModel
-    @State private var isEditMode: EditMode = .inactive
+    @State private var editMode: EditMode = .inactive
+    @State private var selection = Set<Habit>()
     @State private var selectedHabit: Habit?
     @State private var showingNewHabit = false
     @State private var habitToEdit: Habit?
 
     init(selectedDate: Binding<Date>, vm: HabitsViewModel) {
         self._selectedDate = selectedDate
-        self._vm = State(wrappedValue: vm)
+        self.vm = vm
     }
 
     var body: some View {
@@ -57,9 +54,7 @@ struct HabitsContentView: View {
             }
         }
         .onChange(of: allHabits, initial: true) { _, newValue in
-            Task { @MainActor in
-                vm.allBaseHabits = newValue
-            }
+            vm.allBaseHabits = newValue
         }
         .sheet(isPresented: $showingNewHabit) {
             NewHabitView()
@@ -69,6 +64,7 @@ struct HabitsContentView: View {
         }
         .sheet(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit, date: selectedDate)
+                .navigationTransition(.zoom(sourceID: habit.id, in: habitCardAnimation))
         }
         .onChange(of: appContainer.navManager.habitToOpen) { _, habit in
             guard let habit else { return }
@@ -81,66 +77,108 @@ struct HabitsContentView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+
         if !vm.allBaseHabits.isEmpty {
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    withAnimation {
-                        isEditMode = isEditMode == .active ? .inactive : .active
+                if editMode == .active {
+                    Button {
+                        withAnimation {
+                            editMode = .inactive
+                            selection.removeAll()
+                        }
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .fontWeight(.semibold)
                     }
-                } label: {
-                    Image(systemName: isEditMode == .active ? "checkmark" : "line.3.horizontal")
-                        .foregroundStyle(Color.primary)
+                    .buttonStyle(.glassProminent)
+                } else {
+                    Button {
+                        withAnimation {
+                            editMode = .active
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                    }
+                    .tint(DS.Colors.primary)
                 }
             }
         }
 
         if !Calendar.current.isDateInToday(selectedDate) {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { selectedDate = Date() } label: {
+                Button {
+                    selectedDate = Date()
+                } label: {
                     Image(systemName: "arrowshape.turn.up.left")
-                        .foregroundStyle(Color.primary)
                 }
+                .tint(DS.Colors.primary)
             }
         }
 
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button { showingNewHabit = true } label: {
+            Button {
+                showingNewHabit = true
+            } label: {
                 Image(systemName: "plus")
-                    .foregroundStyle(Color.primary)
             }
+            .tint(DS.Colors.primary)
         }
     }
 
     // MARK: - Habits List
 
     private var habitsList: some View {
-        List {
+        List(selection: $selection) {
             habitListContent
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)
-        .environment(\.editMode, $isEditMode)
+        .environment(\.editMode, $editMode)
         .environment(vm)
         .navigationTitle(vm.navigationTitle(for: selectedDate))
         .navigationBarTitleDisplayMode(.large)
         .toolbar { toolbarContent }
+        .safeAreaBar(edge: .bottom) {
+            if editMode.isEditing && !selection.isEmpty {
+                HStack {
+                    Spacer()
+                    Button(role: .destructive) {
+                        deleteSelected()
+                    } label: {
+                        Label {
+                            Text("Delete (\(selection.count))")
+                        } icon: {
+                            Image(systemName: "trash")
+                        }
+                        .padding(DS.Spacing.xs)
+                    }
+                    .buttonStyle(.glass)
+                    .tint(.red)
+                }
+                .padding(DS.Spacing.reg)
+            }
+        }
     }
 
     @ViewBuilder
     private var habitListContent: some View {
         Section {
-            WeeklyCalendarView(selectedDate: $selectedDate)
+            WeeklyCalendarView(selectedDate: $selectedDate, vm: vm)
         }
         .listRowInsets(EdgeInsets())
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
 
         ForEach(vm.activeHabits(for: selectedDate)) { habit in
-            HabitCard(habit: habit, date: selectedDate, onEdit: {
-                habitToEdit = habit
-            })
+            HabitCard(
+                habit: habit,
+                date: selectedDate,
+                onEdit: { habitToEdit = habit },
+                namespace: habitCardAnimation
+            )
+            .tag(habit)
             .opacity(habit.isSkipped(on: selectedDate) ? 0.4 : 1.0)
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
@@ -151,7 +189,7 @@ struct HabitsContentView: View {
                 trailing: DS.Spacing.reg
             ))
             .onTapGesture {
-                guard isEditMode != .active else { return }
+                guard editMode != .active else { return }
                 selectedHabit = habit
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -163,39 +201,42 @@ struct HabitsContentView: View {
         }
     }
 
+    private func deleteSelected() {
+        for habit in selection {
+            appContainer.habitService.delete(habit)
+        }
+        selection.removeAll()
+        editMode = .inactive
+    }
+
     // MARK: - Empty View
 
     private var emptyView: some View {
-        ContentUnavailableView(
-            label: {
-                Label(
-                    title: {
-                        Text("no_habits")
-                            .foregroundStyle(Color.primary.gradient)
-                            .padding(.bottom, 40)
-                    },
-                    icon: {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(Color.primary.gradient)
-                    }
-                )
-            },
-            actions: {
-                Button { showingNewHabit = true } label: {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("create_habit")
-                    }
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(DS.Colors.onPrimary)
-                    .padding(.horizontal, DS.Spacing.xl)
-                    .padding(.vertical, DS.Spacing.sm)
-                }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .capsule)
+        ContentUnavailableView {
+            Label {
+                Text("no_habits")
+                    .padding(.bottom, DS.Spacing.xxl)
+            } icon: {
+                Image(systemName: "")
             }
-        )
+            .foregroundStyle(DS.Colors.primary)
+        } actions: {
+            Button {
+                showingNewHabit = true
+            } label: {
+                Label {
+                    Text("create_habit")
+                } icon: {
+                    Image(systemName: "plus")
+                }
+                .font(DS.AppFont.headline)
+                .foregroundStyle(DS.Colors.onPrimary)
+                .padding(.horizontal, DS.Spacing.xl)
+                .padding(.vertical, DS.Spacing.sm)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .capsule)
+        }
     }
 
     // MARK: - Swipe Actions
@@ -203,13 +244,19 @@ struct HabitsContentView: View {
     @ViewBuilder
     private func swipeActions(for habit: Habit) -> some View {
         let isCompleted = habit.progressForDate(selectedDate) >= habit.goal
-        Button { vm.completeHabit(habit, date: selectedDate) } label: {
+
+        Button {
+            vm.completeHabit(habit, date: selectedDate)
+        } label: {
             Label("", systemImage: isCompleted ? "arrow.uturn.backward" : "checkmark")
         }
         .tint(isCompleted ? .red : .green)
 
         let isSkipped = habit.isSkipped(on: selectedDate)
-        Button { vm.toggleSkip(for: habit, date: selectedDate) } label: {
+
+        Button {
+            vm.toggleSkip(for: habit, date: selectedDate)
+        } label: {
             Label("", systemImage: isSkipped ? "arrow.left" : "arrow.right")
         }
         .tint(.gray)

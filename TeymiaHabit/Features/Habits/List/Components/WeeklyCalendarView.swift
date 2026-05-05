@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct WeeklyCalendarView: View {
+    let vm: HabitsViewModel
+
     @Binding var selectedDate: Date
     @Environment(\.modelContext) private var modelContext
 
@@ -10,13 +12,13 @@ struct WeeklyCalendarView: View {
 
     @State private var weeks: [[Date]] = []
     @State private var currentWeekIndex: Int = 0
-    @State private var progressData: [Date: Double] = [:]
     @State private var availableDateRange: ClosedRange<Date>?
 
     private var calendar: Calendar { Calendar.userPreferred }
 
-    init(selectedDate: Binding<Date>) {
+    init(selectedDate: Binding<Date>, vm: HabitsViewModel) {
         self._selectedDate = selectedDate
+        self.vm = vm
 
         let sortDescriptor = SortDescriptor<Habit>(\.createdAt, order: .forward)
         _habits = Query(sort: [sortDescriptor])
@@ -26,16 +28,16 @@ struct WeeklyCalendarView: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 16) {
+        VStack(spacing: DS.Spacing.xs) {
+            HStack(spacing: DS.Spacing.reg) {
                 ForEach(Array(dayHeaders.enumerated()), id: \.offset) { _, day in
                     Text(day)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.primary.gradient)
+                        .font(.system(size: DS.IconSize.xxs, weight: .medium))
+                        .foregroundStyle(DS.Colors.primary)
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.reg)
 
             TabView(selection: $currentWeekIndex) {
                 ForEach(Array(weeks.enumerated()), id: \.element.first) { index, week in
@@ -46,33 +48,24 @@ struct WeeklyCalendarView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 55)
         }
-        .onChange(of: currentWeekIndex) { _, _ in
-            loadProgressData()
-        }
         .onAppear {
-            calculateAvailableDateRange()
-            generateWeeks()
-            loadProgressData()
-            findCurrentWeekIndex()
+            setupCalendar()
+        }
+        .onChange(of: habits.count) { _, _ in
+            setupCalendar()
         }
         .onChange(of: selectedDate) { _, newDate in
             handleSelectedDateChange(newDate)
         }
-        .onChange(of: habitsData) { _, _ in
-            handleHabitsDataChange()
-        }
-        .onChange(of: completionsData) { _, _ in
-            loadProgressData()
-        }
     }
 
-    private func weekRow(week: [Date], withPadding: Bool = true) -> some View {
-        HStack(spacing: 16) {
+    private func weekRow(week: [Date]) -> some View {
+        HStack(spacing: DS.Spacing.reg) {
             ForEach(week, id: \.self) { date in
+                let progress = calculateProgress(for: date)
                 let hasHabits = hasActiveHabits(for: date)
                 let isAvailable = isDateInAvailableRange(date)
                 let isSelected = calendar.isDate(selectedDate, inSameDayAs: date)
-                let progress = hasHabits ? (progressData[date] ?? 0) : 0
 
                 DayProgressItem(
                     date: date,
@@ -82,90 +75,91 @@ struct WeeklyCalendarView: View {
                     isOverallProgress: true
                 )
                 .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
+                .contentShape(.rect)
                 .onTapGesture {
                     handleDateTap(date: date, hasHabits: hasHabits, isAvailable: isAvailable)
                 }
             }
         }
-        .padding(.horizontal, withPadding ? 16 : 0)
+        .padding(.horizontal, DS.Spacing.reg)
     }
 
-    // MARK: - Derived Data
+    // MARK: - Logic
 
-    private var habitsData: [String] {
-        habits.map { "\($0.startDate.timeIntervalSince1970)-\($0.isArchived)" }
+    private func setupCalendar() {
+        calculateAvailableDateRange()
+        generateWeeks()
+        findCurrentWeekIndex()
     }
 
-    private var completionsData: [String] {
-        allCompletions.map { completion in
-            let habitID = completion.habit.map { String(describing: $0.id) } ?? ""
-            return "\(completion.date.timeIntervalSince1970)-\(completion.value)-\(habitID)"
+    private func calculateProgress(for date: Date) -> Double {
+        let activeHabits = habits.filter {
+            !$0.isArchived && $0.isActiveOnDate(date) && date >= $0.startDate
         }
-    }
 
-    // MARK: - Event Handlers
+        guard !activeHabits.isEmpty else { return 0 }
+
+        let totalNormalizedProgress = activeHabits.reduce(0.0) { sum, habit in
+            let progressValue = vm.getEffectiveProgress(for: habit, on: date)
+
+            let percentage = habit.goal > 0 ? Double(progressValue) / Double(habit.goal) : 0.0
+            return sum + min(percentage, 1.0)
+        }
+
+        return totalNormalizedProgress / Double(activeHabits.count)
+    }
 
     private func handleDateTap(date: Date, hasHabits: Bool, isAvailable: Bool) {
         if hasHabits && isAvailable {
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(DS.Animations.easeInOut) {
                 selectedDate = date
             }
         }
     }
 
     private func handleSelectedDateChange(_ newDate: Date) {
-        if let weekIndex = findWeekIndex(for: newDate) {
-            withAnimation {
-                currentWeekIndex = weekIndex
-            }
+        if let weekIndex = findWeekIndex(for: newDate), currentWeekIndex != weekIndex {
+            withAnimation { currentWeekIndex = weekIndex }
         }
     }
 
-    private func handleHabitsDataChange() {
-        calculateAvailableDateRange()
-        generateWeeks()
-        loadProgressData()
-        findCurrentWeekIndex()
-    }
-
-    private func handleWeekdayPrefsChange() {
-        weeks = []
-        calculateAvailableDateRange()
-        generateWeeks()
-        findCurrentWeekIndex()
-        loadProgressData()
-    }
-
-    // MARK: - Date Utilities
+    // MARK: - Helpers
 
     private func calculateAvailableDateRange() {
         let activeHabits = habits.filter { !$0.isArchived }
-
         guard !activeHabits.isEmpty else {
             availableDateRange = nil
             return
         }
-
         let today = Date()
-        let earliestStartDate = activeHabits.map { $0.startDate }.min() ?? today
-        let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: today) ?? today
-        let effectiveStartDate = max(earliestStartDate, oneYearAgo)
-
-        availableDateRange = effectiveStartDate...today
+        let earliest = activeHabits.map { $0.startDate }.min() ?? today
+        availableDateRange = earliest...today
     }
 
     private func isDateInAvailableRange(_ date: Date) -> Bool {
-        guard let range = availableDateRange else { return false }
-        return range.contains(date)
+        availableDateRange?.contains(date) ?? false
     }
 
     private func hasActiveHabits(for date: Date) -> Bool {
-        guard isDateInAvailableRange(date) else { return false }
+        habits.contains { !$0.isArchived && $0.isActiveOnDate(date) && date >= $0.startDate }
+    }
 
-        return habits.contains {
-            !$0.isArchived && $0.isActiveOnDate(date) && date >= $0.startDate
+    private func findCurrentWeekIndex() {
+        if let index = findWeekIndex(for: selectedDate) {
+            currentWeekIndex = index
         }
+    }
+
+    private func findWeekIndex(for date: Date) -> Int? {
+        weeks.firstIndex { $0.contains { calendar.isDate($0, inSameDayAs: date) } }
+    }
+
+    private var dayHeaders: [String] {
+        let weekdays = calendar.shortStandaloneWeekdaySymbols
+        let firstDayIndex = calendar.firstWeekday - 1
+        let shifted = Array(weekdays[firstDayIndex...] + weekdays[..<firstDayIndex])
+
+        return shifted.map { String($0.prefix(1)) }
     }
 
     // MARK: - Week Generation
@@ -196,9 +190,7 @@ struct WeeklyCalendarView: View {
         var currentWeekStart = weekStart
 
         while currentWeekStart < weekEnd {
-            let weekDates = (0..<7).compactMap {
-                calendar.date(byAdding: .day, value: $0, to: currentWeekStart)
-            }
+            let weekDates = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: currentWeekStart) }
 
             if !weekDates.isEmpty {
                 generatedWeeks.append(weekDates)
@@ -212,66 +204,6 @@ struct WeeklyCalendarView: View {
         }
 
         weeks = generatedWeeks
-    }
-
-    // MARK: - Progress Calculation
-
-    private func loadProgressData() {
-        guard !weeks.isEmpty, currentWeekIndex < weeks.count else { return }
-
-        let week = weeks[currentWeekIndex]
-        var newProgressData: [Date: Double] = [:]
-
-        for date in week where hasActiveHabits(for: date) {
-            newProgressData[date] = calculateProgress(for: date)
-        }
-
-        for (date, progress) in newProgressData {
-            progressData[date] = progress
-        }
-    }
-
-    private func calculateProgress(for date: Date) -> Double {
-        let activeHabits = habits.filter {
-            !$0.isArchived && $0.isActiveOnDate(date) && date >= $0.startDate
-        }
-
-        guard !activeHabits.isEmpty else { return 0 }
-
-        let total = activeHabits.reduce(0.0) {
-            $0 + $1.completionPercentageForDate(date)
-        }
-
-        return total / Double(activeHabits.count)
-    }
-
-    // MARK: - Week Navigation
-
-    private func findCurrentWeekIndex() {
-        if let index = findWeekIndex(for: selectedDate) {
-            withAnimation {
-                currentWeekIndex = index
-            }
-        } else if !weeks.isEmpty {
-            withAnimation {
-                currentWeekIndex = weeks.count - 1
-            }
-        }
-    }
-
-    private func findWeekIndex(for date: Date) -> Int? {
-        weeks.firstIndex {
-            $0.contains { calendar.isDate($0, inSameDayAs: date) }
-        }
-    }
-
-    // MARK: - Day Headers
-    private var dayHeaders: [String] {
-        let weekdays = calendar.shortStandaloneWeekdaySymbols // ["Sun", "Mon", "Tue"...]
-        let firstDayIndex = calendar.firstWeekday - 1
-        let shifted = Array(weekdays[firstDayIndex...] + weekdays[..<firstDayIndex])
-
-        return shifted.map { String($0.prefix(1)) }
     }
 }
 

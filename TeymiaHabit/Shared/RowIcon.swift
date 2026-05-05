@@ -101,8 +101,8 @@ private extension RowIcon {
         }
 
         Section {
-            RowIcon(iconName: "star.fill", color: .yellowOrange)
-            RowIcon(iconName: "square.and.arrow.up.fill", color: .oceanBlue)
+            RowIcon(iconName: "star.fill", color: .appYellow)
+            RowIcon(iconName: "square.and.arrow.up.fill", color: .green)
             RowIcon(iconName: "lock.fill", size: 24)
             RowIcon(iconName: "doc.text.fill")
         }

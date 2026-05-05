@@ -5,7 +5,7 @@ struct HabitProgressView: View {
     let habit: Habit
 
     private enum Layout {
-        static let ringSize: CGFloat = 170
+        static let ringSize: CGFloat = 200
     }
 
     var body: some View {
@@ -53,12 +53,12 @@ struct ProgressIconButton: View {
                 .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.primary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
-                .background(DS.Colors.secondary.opacity(0.1), in: .circle)
         }
         .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
         .contentShape(.circle)
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.5 : 1.0)
+//        .sensoryFeedback(.selection, trigger: action)
     }
 }
 

@@ -81,6 +81,7 @@ private extension NewHabitContentView {
             } label: {
                 Image(systemName: "keyboard.chevron.compact.down")
             }
+            .tint(DS.Colors.primary)
         }
     }
 }
@@ -94,9 +95,7 @@ private extension NewHabitContentView {
             HabitNameRow(title: $viewModel.title, focus: $focusField)
             IconRow(
                 selectedIcon: $viewModel.selectedIcon,
-                selectedColor: $viewModel.selectedIconColor,
-                hexColor: $viewModel.selectedHexColor,
-                actualColor: viewModel.actualColor
+                selectedColor: $viewModel.selectedIconColor
             )
         }
     }

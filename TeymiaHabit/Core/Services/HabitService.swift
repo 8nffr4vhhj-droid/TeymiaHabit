@@ -3,24 +3,26 @@ import SwiftData
 
 @Observable @MainActor
 final class HabitService {
+    var temporaryProgress: [UUID: Int] = [:]
+
     private let modelContext: ModelContext
     private let widgetService: WidgetService
     private let notificationManager: NotificationManager
+    private let timerService: TimerService
+    private let calendar = Calendar.current
 
     init(
         modelContext: ModelContext,
         widgetService: WidgetService,
-        notificationManager: NotificationManager
+        notificationManager: NotificationManager,
+        timerService: TimerService
     ) {
         self.modelContext = modelContext
         self.widgetService = widgetService
         self.notificationManager = notificationManager
+        self.timerService = timerService
     }
 
-    // MARK: - CRUD
-
-    /// Creates a new habit and schedules notifications if needed.
-    /// Notifications are scheduled after save to ensure the habit is persisted first.
     func createHabit(with config: Habit.Configuration) {
         let habit = Habit(
             title: config.title,
@@ -28,7 +30,6 @@ final class HabitService {
             goal: config.goal,
             iconName: config.iconName,
             iconColor: config.iconColor,
-            hexColor: config.hexColor,
             createdAt: Date(),
             activeDays: config.activeDays,
             reminderTimes: config.reminderTimes,
@@ -40,47 +41,67 @@ final class HabitService {
         handleNotifications(for: habit, isReminderEnabled: config.reminderTimes != nil)
     }
 
-    /// Updates an existing habit and reschedules notifications.
     func updateHabit(_ habit: Habit, with config: Habit.Configuration) {
         habit.update(with: config)
-
         saveAndRefresh()
         handleNotifications(for: habit, isReminderEnabled: config.reminderTimes != nil)
     }
 
-    // MARK: - Progress Management
-
-    @discardableResult
-    func completeHabit(for habit: Habit, date: Date) -> Bool {
-        let isCurrentlyCompleted = habit.progressForDate(date) >= habit.goal
-
-        if habit.isSkipped(on: date) {
-            unskipDate(date, for: habit)
-        }
-
-        if isCurrentlyCompleted {
-            updateProgress(to: 0, for: habit, date: date)
-            return false
-        } else {
-            updateProgress(to: habit.goal, for: habit, date: date)
-            return true
-        }
-    }
+    // MARK: - CRUD
 
     func resetProgress(for habit: Habit, date: Date) {
         updateProgress(to: 0, for: habit, date: date)
     }
 
+    // MARK: - Progress
+
+    func effectiveProgress(for habit: Habit, on date: Date) -> Int {
+        if let temp = temporaryProgress[habit.uuid] {
+            return temp
+        }
+
+        if habit.type == .time && calendar.isDateInToday(date) {
+            if let live = timerService.getLiveProgress(for: habit.uuid.uuidString) {
+                 return live
+            }
+        }
+
+        return habit.progressForDate(date)
+    }
+
+    func setTemporaryProgress(for habitId: UUID, progress: Int) {
+        temporaryProgress[habitId] = progress
+    }
+
+    func getTemporaryProgress(for habitId: UUID) -> Int? {
+        return temporaryProgress[habitId]
+    }
+
+    func clearTemporaryProgress(for habitId: UUID) {
+        temporaryProgress.removeValue(forKey: habitId)
+    }
+
+    @discardableResult
+    func completeHabit(for habit: Habit, date: Date) -> Bool {
+        let targetDate = calendar.startOfDay(for: date)
+        let isCurrentlyCompleted = habit.progressForDate(targetDate) >= habit.goal
+
+        if habit.isSkipped(on: targetDate) {
+            unskipDate(targetDate, for: habit)
+        }
+
+        let newProgress = isCurrentlyCompleted ? 0 : habit.goal
+        return updateProgress(to: newProgress, for: habit, date: targetDate)
+    }
+
     @discardableResult
     func updateProgress(to newValue: Int, for habit: Habit, date: Date) -> Bool {
-        let calendar = Calendar.current
         let targetDate = calendar.startOfDay(for: date)
         let wasCompleted = habit.progressForDate(targetDate) >= habit.goal
 
-        let existingCompletions = habit.completions?.filter {
-            calendar.isDate($0.date, inSameDayAs: targetDate)
-        } ?? []
-        existingCompletions.forEach { modelContext.delete($0) }
+        habit.completions?
+            .filter { calendar.isDate($0.date, inSameDayAs: targetDate) }
+            .forEach { modelContext.delete($0) }
 
         if newValue > 0 {
             let newCompletion = HabitCompletion(date: targetDate, value: newValue, habit: habit)
@@ -88,33 +109,30 @@ final class HabitService {
         }
 
         saveAndRefresh()
-
-        let isCompletedNow = newValue >= habit.goal
-        return !wasCompleted && isCompletedNow
+        return !wasCompleted && (newValue >= habit.goal)
     }
 
     @discardableResult
     func addProgress(_ delta: Int, to habit: Habit, date: Date) -> Bool {
-        let before = habit.progressForDate(date)
+        let targetDate = calendar.startOfDay(for: date)
+        let before = habit.progressForDate(targetDate)
         let after = max(0, before + delta)
-        updateProgress(to: after, for: habit, date: date)
-        return before < habit.goal && after >= habit.goal
+
+        return updateProgress(to: after, for: habit, date: targetDate)
     }
 
     func saveProgress(_ value: Int, for habit: Habit, date: Date) {
-        let calendar = Calendar.current
-        let existingCompletions = habit.completions?.filter {
-            calendar.isDate($0.date, inSameDayAs: date)
-        } ?? []
+        let targetDate = calendar.startOfDay(for: date)
+        let existing = habit.completions?.first { calendar.isDate($0.date, inSameDayAs: targetDate) }
 
-        if let existing = existingCompletions.first {
+        if let existing {
             if value > 0 {
-                existing.value = value
+                if existing.value != value { existing.value = value }
             } else {
                 modelContext.delete(existing)
             }
         } else if value > 0 {
-            let completion = HabitCompletion(date: date, value: value, habit: habit)
+            let completion = HabitCompletion(date: targetDate, value: value, habit: habit)
             modelContext.insert(completion)
         }
 
@@ -124,12 +142,10 @@ final class HabitService {
     // MARK: - Skip Management
 
     func skipDate(_ date: Date, for habit: Habit) {
-        let targetDate = Calendar.current.startOfDay(for: date)
+        let targetDate = calendar.startOfDay(for: date)
         var currentSkips = habit.skippedDates
 
-        guard !currentSkips.contains(where: {
-            Calendar.current.isDate($0, inSameDayAs: targetDate)
-        }) else { return }
+        guard !currentSkips.contains(where: { calendar.isDate($0, inSameDayAs: targetDate) }) else { return }
 
         currentSkips.append(targetDate)
         habit.skippedDates = currentSkips
@@ -137,13 +153,9 @@ final class HabitService {
     }
 
     func unskipDate(_ date: Date, for habit: Habit) {
-        let targetDate = Calendar.current.startOfDay(for: date)
-        var currentSkips = habit.skippedDates
+        let targetDate = calendar.startOfDay(for: date)
 
-        currentSkips.removeAll {
-            Calendar.current.isDate($0, inSameDayAs: targetDate)
-        }
-        habit.skippedDates = currentSkips
+        habit.skippedDates.removeAll { calendar.isDate($0, inSameDayAs: targetDate) }
         saveAndRefresh()
     }
 
@@ -169,8 +181,6 @@ final class HabitService {
 
     private var saveTask: Task<Void, Never>?
 
-    /// Debounced save: waits 500ms and cancels if another save comes in sooner.
-    /// Widgets are reloaded immediately since they read from shared App Group storage.
     private func saveAndRefresh() {
         widgetService.reloadWidgetsAfterDataChange()
 
@@ -182,10 +192,6 @@ final class HabitService {
         }
     }
 
-    /// Handles notification scheduling after a habit is persisted.
-    /// The Task is fire-and-forget here intentionally: notification failure is non-fatal
-    /// and the UI doesn't need to wait for it. The Task captures self weakly to avoid
-    /// a retain cycle if the service is deallocated (unlikely for a singleton, but correct).
     private func handleNotifications(for habit: Habit, isReminderEnabled: Bool) {
         guard isReminderEnabled else {
             notificationManager.cancelNotifications(for: habit)

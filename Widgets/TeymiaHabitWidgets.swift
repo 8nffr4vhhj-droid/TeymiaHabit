@@ -88,27 +88,18 @@ struct HabitWidgetData: Identifiable {
     let title: String
     let iconName: String
     let iconColor: HabitIconColor
-    let hexColor: String?
     let progress: Double
     let currentValue: Int
     let goal: Int
     let isCompleted: Bool
     let isExceeded: Bool
     let type: HabitType
-    
-    var actualColor: Color {
-        if let hex = hexColor {
-            return Color(hex: hex)
-        }
-        return iconColor.baseColor
-    }
-    
+
     init(from habit: Habit, date: Date = Date()) {
         self.id = habit.uuid
         self.title = habit.title
         self.iconName = habit.iconName
         self.iconColor = habit.iconColor
-        self.hexColor = habit.hexColor
         self.goal = habit.goal
         self.type = habit.type
         
@@ -129,7 +120,6 @@ struct HabitWidgetData: Identifiable {
         title: String,
         iconName: String,
         iconColor: HabitIconColor,
-        hexColor: String? = nil,
         progress: Double,
         currentValue: Int,
         goal: Int,
@@ -141,7 +131,6 @@ struct HabitWidgetData: Identifiable {
         self.title = title
         self.iconName = iconName
         self.iconColor = iconColor
-        self.hexColor = hexColor
         self.progress = progress
         self.currentValue = currentValue
         self.goal = goal
@@ -290,17 +279,17 @@ struct HabitRingCell: View {
             Circle()
                 .trim(from: 0, to: habit.progress)
                 .stroke(
-                    habit.actualColor.gradient,
+                    habit.iconColor.baseColor,
                     style: StrokeStyle(
                         lineWidth: 6.0,
                         lineCap: .round
                     )
                 )
                 .rotationEffect(.degrees(-90))
-            
+
             HabitIconView(
                 iconName: habit.iconName,
-                color: habit.actualColor,
+                color: habit.iconColor.baseColor,
                 size: size * 0.4,
                 showBackground: false
             )

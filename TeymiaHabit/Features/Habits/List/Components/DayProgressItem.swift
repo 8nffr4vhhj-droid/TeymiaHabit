@@ -79,12 +79,12 @@ struct DayProgressItem: View, Equatable {
 
                     Text(dayNumber)
                         .font(.system(size: fontSize, weight: fontWeight))
-                        .foregroundStyle(isToday ? Color.appOrange.gradient : Color.primary.gradient)
+                        .foregroundStyle(isToday ? Color.mandarine.gradient : Color.primary.gradient)
                 }
                 .frame(width: circleSize, height: circleSize)
 
                 Circle()
-                    .fill(isToday ? .appOrange : .primary)
+                    .fill(isToday ? Color.mandarine : Color.primary)
                     .frame(width: 4, height: 4)
                     .opacity(isSelected ? 1 : 0)
             }
@@ -92,7 +92,7 @@ struct DayProgressItem: View, Equatable {
 
     @ViewBuilder
     private var overallProgressRing: some View {
-        let isCompleted = progress >= 1.0
+        let isCompleted = progress >= 0.999
         let ringColors: [Color] = isCompleted
         ? [Color(#colorLiteral(red: 0.6274385452, green: 0.8037135005, blue: 0.2274374366, alpha: 1)), Color(#colorLiteral(red: 0.1764799058, green: 0.7451224923, blue: 0.3647513092, alpha: 1)), Color(#colorLiteral(red: 0.1764799058, green: 0.7451224923, blue: 0.3647513092, alpha: 1)), Color(#colorLiteral(red: 0.6274385452, green: 0.8037135005, blue: 0.2274374366, alpha: 1))]
         : [Color(#colorLiteral(red: 0.9450980392, green: 0.6392156863, blue: 0.231372549, alpha: 1)), Color(#colorLiteral(red: 1, green: 0.3882352941, blue: 0.003921568627, alpha: 1)), Color(#colorLiteral(red: 1, green: 0.3882352941, blue: 0.003921568627, alpha: 1)), Color(#colorLiteral(red: 0.9450980392, green: 0.6392156863, blue: 0.231372549, alpha: 1))]

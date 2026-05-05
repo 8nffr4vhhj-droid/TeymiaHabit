@@ -57,7 +57,7 @@ struct YearlyHabitChart: View {
                 x: .value("Month", dataPoint.date, unit: .month),
                 y: .value("Progress", dataPoint.value)
             )
-            .foregroundStyle(dataPoint.value == 0 ? Color.secondary.gradient : habit.actualColor.gradient)
+            .foregroundStyle(dataPoint.value == 0 ? Color.secondary.gradient : habit.iconColor.baseColor.gradient)
             .cornerRadius(8)
             .opacity(yearlyBarOpacity(for: dataPoint.date))
         }

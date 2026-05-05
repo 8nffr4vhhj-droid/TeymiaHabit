@@ -12,19 +12,19 @@ final class HabitWidgetService {
         self.habitService = habitService
     }
 
-    func saveProgressToDatabase(habitId: String, progress: Int) async {
-        guard let habitUUID = UUID(uuidString: habitId) else { return }
+    func saveProgressFromWidget(habitId: String, progress: Int) async {
+            guard let habitUUID = UUID(uuidString: habitId) else { return }
 
-        let descriptor = FetchDescriptor<Habit>(
-            predicate: #Predicate<Habit> { $0.uuid == habitUUID }
-        )
+            let descriptor = FetchDescriptor<Habit>(
+                predicate: #Predicate<Habit> { $0.uuid == habitUUID }
+            )
 
-        guard let habit = try? modelContext.fetch(descriptor).first else { return }
+            guard let habit = try? modelContext.fetch(descriptor).first else { return }
 
-        habitService.updateProgress(
-            to: progress,
-            for: habit,
-            date: Date()
-        )
-    }
+            habitService.saveProgress(
+                progress,
+                for: habit,
+                date: Date()
+            )
+        }
 }

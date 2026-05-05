@@ -8,7 +8,6 @@ final class Habit: Identifiable {
     var title: String = ""
     var iconName: String = "book"
     var iconColor: HabitIconColor = HabitIconColor.primary
-    var hexColor: String? = nil
     var type: HabitType = HabitType.count
     var goal: Int = 1
     var activeDaysBitmask: Int = 0b1111111
@@ -21,16 +20,8 @@ final class Habit: Identifiable {
     var completions: [HabitCompletion]?
 
     @Transient
-    var actualColor: Color {
-        if let hex = hexColor {
-            return Color(hex: hex)
-        }
-        return iconColor.baseColor
-    }
-
-    @Transient
     var ringColors: (dark: Color, light: Color) {
-        actualColor.ringGradientPair
+        iconColor.ringPair
     }
 
     // MARK: - Computed Data
@@ -61,7 +52,6 @@ final class Habit: Identifiable {
         goal: Int = 1,
         iconName: String,
         iconColor: HabitIconColor = .primary,
-        hexColor: String? = nil,
         createdAt: Date = Date(),
         activeDays: [Bool]? = nil,
         reminderTimes: [Date]? = nil,
@@ -73,7 +63,6 @@ final class Habit: Identifiable {
         self.goal = goal
         self.iconName = iconName
         self.iconColor = iconColor
-        self.hexColor = hexColor
         self.createdAt = createdAt
         self.startDate = Calendar.current.startOfDay(for: startDate)
 
@@ -92,7 +81,6 @@ final class Habit: Identifiable {
         var goal: Int = 1
         var iconName: String = "book"
         var iconColor: HabitIconColor = .primary
-        var hexColor: String? = nil
         var activeDays: [Bool] = Array(repeating: true, count: 7)
         var reminderTimes: [Date]? = nil
         var startDate: Date = Date()
@@ -104,7 +92,6 @@ final class Habit: Identifiable {
         self.goal = config.goal
         self.iconName = config.iconName
         self.iconColor = config.iconColor
-        self.hexColor = config.hexColor
         self.activeDays = config.activeDays
         self.reminderTimes = config.reminderTimes
         self.startDate = Calendar.current.startOfDay(for: config.startDate)
@@ -140,8 +127,12 @@ extension Habit {
 
     func completionPercentageForDate(_ date: Date) -> Double {
         guard goal > 0 else { return progressForDate(date) > 0 ? 1.0 : 0.0 }
-        let percentage = Double(progressForDate(date)) / Double(goal)
-        return min(percentage, 2.0)
+
+        let actualProgress = Double(progressForDate(date))
+        let targetGoal = Double(goal)
+        let percentage = actualProgress / targetGoal
+
+        return min(percentage, 1.0)
     }
 
     func formatProgress(_ progress: Int) -> String {

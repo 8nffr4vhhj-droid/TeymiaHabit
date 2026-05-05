@@ -18,14 +18,6 @@ struct HabitActivityAttributes: ActivityAttributes {
     let habitType: HabitActivityType
     let habitIcon: String
     let habitIconColor: HabitIconColor
-    let habitHexColor: String?
-    
-    var actualColor: Color {
-        if let hex = habitHexColor {
-            return Color(hex: hex)
-        }
-        return habitIconColor.baseColor
-    }
 }
 
 // MARK: - Shared Types (все платформы)
@@ -87,7 +79,7 @@ struct LiveActivityHabitIcon: View {
     var body: some View {
         HabitIconView(
             iconName: context.attributes.habitIcon,
-            color: context.attributes.actualColor,
+            color: context.attributes.habitIconColor.baseColor,
             size: size
         )
     }

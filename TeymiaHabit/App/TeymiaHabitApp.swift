@@ -9,6 +9,8 @@ struct TeymiaHabitApp: App {
     @State private var appContainer: AppDependencyContainer
 
     init() {
+        AppFont.configureAppearance()
+
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: "group.com.amanbayserkeev.teymiahabit"
         ) else {

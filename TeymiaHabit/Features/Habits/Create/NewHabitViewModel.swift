@@ -46,14 +46,8 @@ final class NewHabitViewModel {
     var startDate         = Date()
     var selectedIcon      = "book.fill"
     var selectedIconColor: HabitIconColor = .primary
-    var selectedHexColor: String?  = nil
 
     // MARK: - Computed UI Properties
-
-    var actualColor: Color {
-        if let hex = selectedHexColor { return Color(hex: hex) }
-        return selectedIconColor.baseColor
-    }
 
     var isFormValid: Bool {
         let hasTitle = !title.trimmingCharacters(in: .whitespaces).isEmpty
@@ -114,7 +108,6 @@ final class NewHabitViewModel {
             goal: effectiveGoal,
             iconName: selectedIcon,
             iconColor: selectedIconColor,
-            hexColor: selectedHexColor,
             activeDays: activeDays,
             reminderTimes: isReminderEnabled ? reminderTimes : nil,
             startDate: startDate
@@ -136,7 +129,6 @@ final class NewHabitViewModel {
         startDate         = habit.startDate
         selectedIcon      = habit.iconName
         selectedIconColor = habit.iconColor
-        selectedHexColor  = habit.hexColor
         isReminderEnabled = habit.reminderTimes?.isEmpty == false
         reminderTimes     = habit.reminderTimes ?? [Date()]
 
@@ -163,7 +155,6 @@ final class NewHabitViewModel {
         let startDate: Date
         let iconName: String
         let iconColor: HabitIconColor
-        let hexColor: String?
     }
 
     private func makeSnapshot() -> Snapshot {
@@ -176,8 +167,7 @@ final class NewHabitViewModel {
             reminderTimes: reminderTimes,
             startDate: startDate,
             iconName: selectedIcon,
-            iconColor: selectedIconColor,
-            hexColor: selectedHexColor
+            iconColor: selectedIconColor
         )
     }
 }

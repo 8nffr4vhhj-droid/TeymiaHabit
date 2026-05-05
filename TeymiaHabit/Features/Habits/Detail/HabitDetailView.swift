@@ -64,7 +64,9 @@ struct HabitDetailContentView: View {
         @Bindable var vm = viewModel
         NavigationStack {
             mainContent(vm: viewModel)
-                .toolbar { toolbarContent(vm: viewModel) }
+                .toolbar {
+                    toolbarContent(vm: viewModel)
+                }
                 .deleteHabitAlert(habit: $habitToDelete) { _ in
                     viewModel.deleteHabit()
                     dismiss()
@@ -76,8 +78,6 @@ struct HabitDetailContentView: View {
                 .onChange(of: date) { _, newDate in
                     viewModel.updateDisplayedDate(newDate)
                 }
-                // NewHabitView reads appContainer from Environment automatically —
-                // no need to pass habitService explicitly anymore.
                 .sheet(isPresented: $isEditPresented) {
                     NewHabitView(habit: habit)
                 }
@@ -85,7 +85,6 @@ struct HabitDetailContentView: View {
                     HabitStatisticsView(habit: habit)
                 }
         }
-        .presentationDetents([.fraction(0.7)])
         .presentationDragIndicator(.visible)
     }
 
@@ -93,19 +92,22 @@ struct HabitDetailContentView: View {
 
     @ViewBuilder
     private func mainContent(vm: HabitDetailViewModel) -> some View {
-        VStack(spacing: DS.Spacing.xxl) {
-            headerView
-                .padding(.horizontal, DS.Spacing.xl)
+        ScrollView {
+            VStack(spacing: DS.Spacing.xxl) {
+                headerView
+                    .padding(.horizontal, DS.Spacing.xl)
 
-            HabitProgressView(vm: vm, habit: habit)
+                Spacer()
 
-            actionButtonsSection(vm: vm)
+                HabitProgressView(vm: vm, habit: habit)
 
-            completeButtonView(vm: vm)
-                .disabled(vm.isAlreadyCompleted)
-                .padding(.horizontal, DS.Spacing.xl)
+                actionButtonsSection(vm: vm)
+                completeButtonView(vm: vm)
+                    .disabled(vm.isAlreadyCompleted)
+                    .padding(.horizontal, DS.Spacing.xl)
+                Spacer()
+            }
         }
-        .padding(.horizontal, DS.Spacing.xl)
     }
 
     @ViewBuilder
@@ -200,7 +202,25 @@ struct HabitDetailContentView: View {
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(.clear.interactive().tint(habit.actualColor), in: .capsule)
+        .glassEffect(.clear.interactive().tint(habit.iconColor.baseColor), in: .capsule)
         .padding(.horizontal, DS.Spacing.xl)
     }
+}
+
+#Preview {
+    let container = PreviewContainer.container
+    let appContainer = PreviewContainer.appContainer
+
+    let habit = Habit(
+        title: "Read Books",
+        type: .time,
+        goal: 10,
+        iconName: "book.fill",
+        iconColor: .colorPicker
+    )
+    container.mainContext.insert(habit)
+
+    return HabitDetailView(habit: habit, date: .now)
+        .environment(appContainer)
+        .modelContainer(container)
 }

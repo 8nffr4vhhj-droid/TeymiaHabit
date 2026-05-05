@@ -20,20 +20,20 @@ enum AppTintColor: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .primary: Color.primary
-        case .blue:    .blue
-        case .brown:   .brown
+        case .primary: .appPrimary
+        case .blue:    .appBlue
+        case .brown:   .appBrown
         case .cyan:    .cyan
-        case .gray:    .gray
-        case .green:   .green
-        case .indigo:  .indigo
-        case .mint:    .mint
-        case .orange:  .orange
-        case .pink:    .pink
-        case .purple:  .purple
-        case .red:     .red
+        case .gray:    .appGray
+        case .green:   .appGreen
+        case .indigo:  .appColorPicker
+        case .mint:    .appMint
+        case .orange:  .appOrange
+        case .pink:    .appPink
+        case .purple:  .appPurple
+        case .red:     .appRed
         case .teal:    .teal
-        case .yellow:  .yellow
+        case .yellow:  .appYellow
         }
     }
 

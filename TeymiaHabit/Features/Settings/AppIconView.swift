@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppIconRow: View {
     var body: some View {
-#if !targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
         EmptyView()
 #else
         NavigationLink {
