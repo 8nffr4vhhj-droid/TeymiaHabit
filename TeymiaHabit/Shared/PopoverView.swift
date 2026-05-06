@@ -1,30 +1,22 @@
 import SwiftUI
 
-// TODO:
-
 struct PopoverView<Label: View, Content: View>: View {
-    @State private var haptic: Bool = false
-    @State private var isExpanded: Bool = false
-
     @ViewBuilder var label: Label
     @ViewBuilder var content: Content
 
-    @Namespace private var namespace
+    @State private var haptic: Bool = false
+    @State private var isExpanded: Bool = false
 
-    var isHapticEnabled: Bool = true
+    @Namespace private var namespace
 
     var body: some View {
         Button {
-            if isHapticEnabled {
-                haptic.toggle()
-            }
-
             isExpanded.toggle()
         } label: {
             label
                 .matchedTransitionSource(id: "POPOVER", in: namespace)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.plain)
         .popover(isPresented: $isExpanded) {
             PopOverHelper {
                 content
@@ -51,4 +43,3 @@ private struct PopOverHelper<Content: View>: View {
             .presentationCompactAdaptation(.popover)
     }
 }
-

@@ -62,7 +62,7 @@ struct HabitsContentView: View {
         .sheet(item: $habitToEdit) { habit in
             NewHabitView(habit: habit)
         }
-        .sheet(item: $selectedHabit) { habit in
+        .fullScreenCover(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit, date: selectedDate)
                 .navigationTransition(.zoom(sourceID: habit.id, in: habitCardAnimation))
         }
@@ -138,7 +138,7 @@ struct HabitsContentView: View {
         .environment(\.editMode, $editMode)
         .environment(vm)
         .navigationTitle(vm.navigationTitle(for: selectedDate))
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .safeAreaBar(edge: .bottom) {
             if editMode.isEditing && !selection.isEmpty {

@@ -20,13 +20,13 @@ struct HabitNameRow: View {
                         focus = .count
                     }
 
-                Button(action: {
+                Button {
                     withAnimation(DS.Animations.spring) {
                         title = ""
                     }
-                }) {
+                } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Color.secondary.opacity(0.5))
+                        .foregroundStyle(DS.Colors.secondary.opacity(0.5))
                         .font(.system(size: DS.IconSize.sm))
                 }
                 .buttonStyle(.plain)

@@ -85,7 +85,6 @@ struct HabitDetailContentView: View {
                     HabitStatisticsView(habit: habit)
                 }
         }
-        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Content

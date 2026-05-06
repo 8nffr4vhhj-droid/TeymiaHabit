@@ -41,7 +41,7 @@ final class HabitsViewModel {
     // MARK: - Actions
 
     func getEffectiveProgress(for habit: Habit, on date: Date) -> Int {
-        return habitService.effectiveProgress(for: habit, on: date)
+        habitService.effectiveProgress(for: habit, on: date)
     }
 
     private func handleResult(_ didComplete: Bool) {

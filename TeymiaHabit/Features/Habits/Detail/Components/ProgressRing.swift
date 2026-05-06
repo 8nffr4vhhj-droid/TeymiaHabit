@@ -19,7 +19,7 @@ struct ProgressRing: View {
         static let ringLineWidthRatio: CGFloat = 0.12
         static let checkmarkSizeRatio: CGFloat = 0.4
         static let iconSizeRatio: CGFloat = 0.35
-        static let textSizeRatio: CGFloat = 0.27
+        static let textSizeRatio: CGFloat = 0.25
         static let textFrameWidthRatio: CGFloat = 0.65
         static let textFrameHeightRatio: CGFloat = 0.35
         static let minimumScaleFactor: CGFloat = 0.3
@@ -120,7 +120,7 @@ private extension ProgressRing {
                     .frame(width: adaptiveLineWidth, height: adaptiveLineWidth)
                     .offset(y: -size / 2)
                     .foregroundStyle(ringColors.light)
-                    .mask(
+                    .mask {
                         LinearGradient(
                             colors: [.clear, .white, .white],
                             startPoint: .leading,
@@ -128,7 +128,7 @@ private extension ProgressRing {
                         )
                         .frame(width: adaptiveLineWidth, height: adaptiveLineWidth)
                         .offset(y: -size / 2)
-                    )
+                    }
                     .shadow(
                         color: Metrics.capShadowColor,
                         radius: Metrics.capShadowRadius,

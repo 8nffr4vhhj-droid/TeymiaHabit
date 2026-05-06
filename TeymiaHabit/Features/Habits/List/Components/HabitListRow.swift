@@ -64,7 +64,6 @@ struct HabitListRow: View {
         return appContainer.timerService.isTimerRunning(for: habit.uuid.uuidString)
     }
 
-
     private var cardProgress: Int {
         _ = appContainer.timerService.updateTrigger
 

@@ -38,6 +38,7 @@ struct ActionButtonsSection: View {
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
         .contentShape(.circle)
     }
 
@@ -50,21 +51,19 @@ struct ActionButtonsSection: View {
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
         }
         .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
         .contentShape(.circle)
     }
 
     private var manualEntryButton: some View {
-        Button { isShowingPopover = true } label: {
+        PopoverView {
             Image(systemName: "plus.arrow.trianglehead.clockwise")
                 .font(.system(size: DS.IconSize.reg, weight: .medium))
                 .foregroundStyle(DS.Colors.primary)
                 .frame(width: DS.TouchTarget.comfortable, height: DS.TouchTarget.comfortable)
-        }
-        .buttonStyle(.plain)
-        .contentShape(.circle)
-        .popover(isPresented: $isShowingPopover) {
+        } content: {
             DayProgressPopover(habit: habit, date: date, onAddProgress: onAddProgress)
-                .presentationCompactAdaptation(.popover)
         }
+        .glassEffect(.regular.interactive(), in: .circle)
     }
 }

@@ -32,7 +32,8 @@ final class HabitDetailViewModel {
     private var isTimeHabitToday: Bool { habit.type == .time && isToday }
 
     var currentProgress: Int {
-        habitService.effectiveProgress(for: habit, on: currentDisplayedDate)
+        _ = timerService.updateTrigger
+        return habitService.effectiveProgress(for: habit, on: currentDisplayedDate)
     }
 
     var completionPercentage: Double {
