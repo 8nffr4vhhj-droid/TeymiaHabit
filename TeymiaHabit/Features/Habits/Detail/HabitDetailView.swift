@@ -139,7 +139,9 @@ struct HabitDetailContentView: View {
 
         if showStatsButton {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showingStats = true } label: {
+                Button {
+                    showingStats = true
+                } label: {
                     Image(systemName: "chart.bar.fill")
                 }
                 .tint(.primary)

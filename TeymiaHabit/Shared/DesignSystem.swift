@@ -90,9 +90,9 @@ enum DS {
             let y: CGFloat
         }
 
-        static let small = ShadowConfig(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-        static let medium = ShadowConfig(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-        static let large = ShadowConfig(color: .black.opacity(0.2), radius: 12, x: 0, y: 8)
+        static let small = ShadowConfig(color: .black.opacity(0.1), radius: 4, x: 0, y: 4)
+        static let medium = ShadowConfig(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+        static let large = ShadowConfig(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
     }
 }
 

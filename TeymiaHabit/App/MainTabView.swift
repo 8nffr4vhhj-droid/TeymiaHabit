@@ -65,7 +65,7 @@ struct MainTabView: View {
 
         Tab(AppTab.statistics.title, systemImage: AppTab.statistics.symbolImage, value: .statistics) {
             NavigationStack {
-                Text("statistics")
+                StatisticsView()
             }
         }
 

@@ -28,13 +28,20 @@ struct HabitStatisticsView: View {
                 .listRowInsets(EdgeInsets())
 
                 Section {
-                    VStack(spacing: DS.Spacing.reg) {
+                    VStack(spacing: DS.Spacing.md) {
                         TimeRangePicker(selection: $vm.barChartTimeRange)
 
-                        HabitCharts(habit: habit, range: vm.barChartTimeRange)
+                        HabitChartsView(habit: habit, range: vm.barChartTimeRange)
                             .id("\(habit.uuid.uuidString)-\(vm.barChartTimeRange.rawValue)")
                     }
-                    .padding(.vertical, DS.Spacing.reg)
+                    .padding(.top, DS.Spacing.reg)
+                } footer: {
+                    HStack(spacing: DS.Spacing.xxs) {
+                        Image(systemName: "hand.tap")
+                        Text("Press and hold bars for details")
+                    }
+                    .foregroundStyle(DS.Colors.secondary)
+                    .padding(.leading, DS.Spacing.reg)
                 }
                 .listRowInsets(EdgeInsets())
             }

@@ -17,3 +17,35 @@ extension Date {
         return formatter.string(from: self).capitalized
     }
 }
+
+extension DateFormatter {
+
+    static let nominativeMonthYear: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL yyyy"
+        return formatter
+    }()
+
+    static let nominativeMonth: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL"
+        return formatter
+    }()
+
+    static func capitalizedNominativeMonthYear(from date: Date) -> String {
+        let dateString = nominativeMonthYear.string(from: date)
+        return dateString.capitalizingFirstLetter()
+    }
+
+    static func capitalizedNominativeMonth(from date: Date) -> String {
+        let dateString = nominativeMonth.string(from: date)
+        return dateString.capitalizingFirstLetter()
+    }
+}
+
+private extension String {
+    func capitalizingFirstLetter() -> String {
+        guard let firstChar = self.first else { return self }
+        return String(firstChar).uppercased() + self.dropFirst()
+    }
+}

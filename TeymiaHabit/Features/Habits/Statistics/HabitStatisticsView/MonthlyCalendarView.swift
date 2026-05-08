@@ -48,7 +48,7 @@ struct MonthlyCalendarView: View {
     private var weekdayHeader: some View {
         WeekdayHeaderView()
             .padding(.horizontal, DS.Spacing.xxs)
-            .padding(.bottom, DS.Spacing.reg)
+            .padding(.vertical, DS.Spacing.reg)
     }
 
     private var monthGridContainer: some View {

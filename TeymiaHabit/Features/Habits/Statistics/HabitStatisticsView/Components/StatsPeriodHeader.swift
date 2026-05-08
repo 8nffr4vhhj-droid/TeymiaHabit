@@ -27,7 +27,7 @@ struct StatsPeriodHeader: View {
                         onNext()
                     }
                 }
-                .foregroundStyle(Color(.systemGray3))
+                .foregroundStyle(Color(.systemGray2))
                 .font(.system(size: DS.IconSize.sm))
                 .fontWeight(.semibold)
                 .buttonStyle(.plain)

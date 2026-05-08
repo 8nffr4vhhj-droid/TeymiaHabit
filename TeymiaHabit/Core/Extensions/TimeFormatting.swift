@@ -31,23 +31,3 @@ extension Int {
         return formatter.string(from: TimeInterval(self)) ?? "\(self)s"
     }
 }
-
-extension DateFormatter {
-    static let nominativeMonthYear: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "LLLL yyyy"
-        return formatter
-    }()
-
-    static func capitalizedNominativeMonthYear(from date: Date) -> String {
-        let dateString = nominativeMonthYear.string(from: date)
-        return dateString.capitalizingFirstLetter()
-    }
-}
-
-private extension String {
-    func capitalizingFirstLetter() -> String {
-        guard let firstChar = self.first else { return self }
-        return String(firstChar).uppercased() + self.dropFirst()
-    }
-}
