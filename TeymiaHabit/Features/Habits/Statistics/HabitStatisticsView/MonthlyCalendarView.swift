@@ -35,7 +35,7 @@ struct MonthlyCalendarView: View {
     // MARK: - Components
     private var headerView: some View {
         StatsPeriodHeader(
-            title: DateFormatter.capitalizedNominativeMonthYear(from: vm.currentMonthDate),
+            title: vm.currentMonthDate.nominativeMonthYear(),
             onPrevious: vm.showPreviousMonth,
             onNext: vm.showNextMonth,
             canGoPrevious: vm.canNavigateToPreviousMonth,

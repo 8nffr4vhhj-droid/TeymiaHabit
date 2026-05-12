@@ -6,7 +6,7 @@ final class HabitDetailViewModel {
 
     // MARK: - Dependencies
     private let habit: Habit
-    private let habitService: HabitService
+    private let habitService: any HabitServiceProtocol
     private let timerService: TimerService
     private let widgetService: WidgetService
     private let notificationManager: NotificationManager
@@ -46,7 +46,7 @@ final class HabitDetailViewModel {
     init(
         habit: Habit,
         initialDate: Date,
-        habitService: HabitService,
+        habitService: any HabitServiceProtocol,
         timerService: TimerService,
         widgetService: WidgetService,
         notificationManager: NotificationManager,

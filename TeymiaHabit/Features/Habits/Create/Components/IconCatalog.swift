@@ -2,11 +2,17 @@ import SwiftUI
 
 struct CategorySection: Identifiable {
     let id: String
-    let name: LocalizedStringResource
+    let name: LocalizedStringKey
     let icons: [String]
 
-    init(name: LocalizedStringResource, icons: [String]) {
-        self.id = name.key
+    init(name: String, icons: [String]) {
+        self.id = name
+        self.name = LocalizedStringKey(name)
+        self.icons = icons
+    }
+
+    init(name: LocalizedStringKey, icons: [String]) {
+        self.id = UUID().uuidString
         self.name = name
         self.icons = icons
     }

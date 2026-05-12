@@ -1,54 +1,39 @@
 import SwiftUI
 
-// MARK: - Goal Configuration
-
-struct GoalConfiguration {
-    // Single source of truth for count: the raw text the user types.
-    // countGoal is derived from countText, not stored separately.
-    var countText: String = "1"
-    var hours: Int = 0
-    var minutes: Int = 0
-
-    /// Parsed count value. Returns nil if the text is not a valid positive integer.
-    var parsedCount: Int? {
-        guard let value = Int(countText), value > 0 else { return nil }
-        return value
-    }
-}
-
-// MARK: - ViewModel
-
 @Observable @MainActor
 final class NewHabitViewModel {
+    private let habitService: any HabitServiceProtocol
 
-    // HabitService owns modelContext, widgetService, and notificationManager.
-    // ViewModel delegates all persistence and side effects to it.
-    private let habitService: HabitService
-
-    private enum Constants {
-        static let secondsInHour   = 3600
-        static let secondsInMinute = 60
-        static let maxSecondsInDay = 86_400
-        static let maxCount        = 999_999
-    }
-
-    // The habit being edited, nil when creating a new one.
     let habit: Habit?
-
-    // MARK: - Form State
-
-    var title             = ""
-    var selectedType: HabitType    = .count
-    var goalConfig        = GoalConfiguration()
-    var activeDays: [Bool]         = Array(repeating: true, count: 7)
+    var title = ""
+    var selectedType: HabitType = .count
+    var goalConfig = GoalConfiguration()
+    var activeDays: [Bool] = Array(repeating: true, count: 7)
     var isReminderEnabled = false
-    var reminderTimes: [Date]      = [Date()]
-    var startDate         = Date()
-    var selectedIcon      = "book.fill"
+    var reminderTimes: [Date] = [Date()]
+    var startDate = Date()
+    var selectedIcon = "book.fill"
     var selectedIconColor: HabitIconColor = .primary
 
-    // MARK: - Computed UI Properties
+    // MARK: - Init
+    init(habitService: any HabitServiceProtocol, habit: Habit?) {
+        self.habitService = habitService
+        self.habit = habit
 
+        if let habit {
+            loadValues(from: habit)
+        }
+        self.initialSnapshot = makeSnapshot()
+    }
+
+    private enum Constants {
+        static let secondsInHour = 3600
+        static let secondsInMinute = 60
+        static let maxSecondsInDay = 86_400
+        static let maxCount = 999_999
+    }
+
+    // MARK: - Computed UI Properties
     var isFormValid: Bool {
         let hasTitle = !title.trimmingCharacters(in: .whitespaces).isEmpty
         let hasGoal: Bool = switch selectedType {
@@ -60,18 +45,14 @@ final class NewHabitViewModel {
 
     var hasChanges: Bool {
         guard let initial = initialSnapshot else {
-            // New habit: any non-default input counts as a change
             return !title.isEmpty || isReminderEnabled || selectedType != .count
         }
         return initial != makeSnapshot()
     }
 
     // MARK: - Private State
-
     private var initialSnapshot: Snapshot?
 
-    /// Effective goal value in the model's unit (count or seconds).
-    /// Clamped to safe ranges to prevent corrupt data.
     private var effectiveGoal: Int {
         switch selectedType {
         case .count:
@@ -79,26 +60,12 @@ final class NewHabitViewModel {
             return min(value, Constants.maxCount)
         case .time:
             let total = goalConfig.hours * Constants.secondsInHour
-                      + goalConfig.minutes * Constants.secondsInMinute
+            + goalConfig.minutes * Constants.secondsInMinute
             return min(total, Constants.maxSecondsInDay)
         }
     }
 
-    // MARK: - Init
-
-    init(habitService: HabitService, habit: Habit? = nil) {
-        self.habitService = habitService
-        self.habit = habit
-
-        if let habit {
-            loadValues(from: habit)
-        }
-        self.initialSnapshot = makeSnapshot()
-    }
-
     // MARK: - Actions
-
-    /// Persists the habit. View calls this and then dismisses itself.
     func save() {
         guard isFormValid else { return }
 
@@ -121,7 +88,6 @@ final class NewHabitViewModel {
     }
 
     // MARK: - Private Helpers
-
     private func loadValues(from habit: Habit) {
         title             = habit.title
         selectedType      = habit.type
@@ -142,9 +108,6 @@ final class NewHabitViewModel {
     }
 
     // MARK: - Snapshot
-
-    // Snapshot captures every user-editable field so hasChanges is accurate.
-    // Previously missing: reminderTimes, startDate, iconColor.
     private struct Snapshot: Equatable {
         let title: String
         let type: HabitType

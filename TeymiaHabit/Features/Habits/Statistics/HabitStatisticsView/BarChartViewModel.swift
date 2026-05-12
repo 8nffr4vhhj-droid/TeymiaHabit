@@ -33,7 +33,7 @@ final class BarChartViewModel {
 
         switch range {
         case .week:  return formatWeeklyRange(for: date)
-        case .month: return DateFormatter.capitalizedNominativeMonthYear(from: date)
+        case .month: return date.nominativeMonthYear()
         case .year:  return "\(calendar.component(.year, from: date))"
         }
     }
@@ -204,10 +204,6 @@ private extension BarChartViewModel {
 // MARK: - Formatting
 extension BarChartViewModel {
 
-    static let shortDateFormatter: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "d MMM"; return f
-    }()
-
     func chartAverageFormatted(chartData: [ChartDataPoint], habitType: HabitType) -> String {
         let active = chartData.filter { $0.value > 0 }
         guard !active.isEmpty else { return "0" }
@@ -231,8 +227,8 @@ extension BarChartViewModel {
 
     func formatSelectionTitle(for date: Date) -> String {
         range == .year
-        ? DateFormatter.capitalizedNominativeMonth(from: date)
-        : Self.shortDateFormatter.string(from: date).capitalized
+        ? date.nominativeMonth()
+        : date.formatted(.dateTime.day().month().year()).capitalized
     }
 
     func formatWeeklyRange(for date: Date) -> String {

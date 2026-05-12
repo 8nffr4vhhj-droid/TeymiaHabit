@@ -13,6 +13,7 @@ struct WeeklyCalendarView: View {
     @State private var weeks: [[Date]] = []
     @State private var currentWeekIndex: Int = 0
     @State private var availableDateRange: ClosedRange<Date>?
+    @State private var refreshID = UUID()
 
     private var calendar: Calendar { Calendar.userPreferred }
 
@@ -39,6 +40,10 @@ struct WeeklyCalendarView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 55)
+        }
+        .onChange(of: vm.calendarUpdateTrigger) { _, _ in
+            refreshID = UUID()
+            generateWeeks()
         }
         .onAppear {
             setupCalendar()

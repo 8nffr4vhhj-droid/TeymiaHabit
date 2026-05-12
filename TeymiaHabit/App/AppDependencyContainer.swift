@@ -15,7 +15,7 @@ final class AppDependencyContainer {
     let widgetService = WidgetService()
 
     // MARK: - Services
-    let habitService: HabitService
+    let habitService: any HabitServiceProtocol
     let storeKitService: StoreKitService = StoreKitService()
 
     // MARK: - Init

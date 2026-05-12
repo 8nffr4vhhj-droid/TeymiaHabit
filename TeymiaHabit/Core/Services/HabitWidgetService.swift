@@ -4,10 +4,10 @@ import SwiftData
 @Observable @MainActor
 final class HabitWidgetService {
     private let modelContext: ModelContext
-    private let habitService: HabitService
+    private let habitService: any HabitServiceProtocol
     private let appGroupsID = "group.com.amanbayserkeev.teymiahabit"
 
-    init(modelContext: ModelContext, habitService: HabitService) {
+    init(modelContext: ModelContext, habitService: any HabitServiceProtocol) {
         self.modelContext = modelContext
         self.habitService = habitService
     }

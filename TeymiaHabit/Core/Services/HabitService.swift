@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Observable @MainActor
-final class HabitService {
+final class HabitService: HabitServiceProtocol {
     var temporaryProgress: [String: Int] = [:]
 
     private let modelContext: ModelContext
@@ -22,6 +22,8 @@ final class HabitService {
         self.notificationManager = notificationManager
         self.timerService = timerService
     }
+
+    // MARK: - CRUD
 
     func createHabit(with config: Habit.Configuration) {
         let habit = Habit(
@@ -47,10 +49,27 @@ final class HabitService {
         handleNotifications(for: habit, isReminderEnabled: config.reminderTimes != nil)
     }
 
-    // MARK: - CRUD
+    func archive(_ habit: Habit) {
+        habit.isArchived = true
+        saveAndRefresh()
+    }
 
-    func resetProgress(for habit: Habit, date: Date) {
-        updateProgress(to: 0, for: habit, date: date)
+    func unarchive(_ habit: Habit) {
+        habit.isArchived = false
+        saveAndRefresh()
+    }
+
+    func delete(_ habit: Habit) {
+        notificationManager.cancelNotifications(for: habit)
+        modelContext.delete(habit)
+        saveAndRefresh()
+    }
+
+    func reorderHabits(_ habits: [Habit]) {
+        for (index, habit) in habits.enumerated() {
+            habit.displayOrder = index
+        }
+        saveAndRefresh()
     }
 
     // MARK: - Progress
@@ -70,32 +89,13 @@ final class HabitService {
         return habit.progressForDate(date)
     }
 
-    func setTemporaryProgress(for habitId: UUID, date: Date, progress: Int) {
-        let key = makeKey(for: habitId, date: date)
-        temporaryProgress[key] = progress
-    }
-
-    func getTemporaryProgress(for habitId: UUID, date: Date) -> Int? {
-        let key = makeKey(for: habitId, date: date)
-        return temporaryProgress[key]
-    }
-
-    func clearTemporaryProgress(for habitId: UUID, date: Date) {
-        let key = makeKey(for: habitId, date: date)
-        temporaryProgress.removeValue(forKey: key)
-    }
-
     @discardableResult
-    func completeHabit(for habit: Habit, date: Date) -> Bool {
+    func addProgress(_ delta: Int, to habit: Habit, date: Date) -> Bool {
         let targetDate = calendar.startOfDay(for: date)
-        let isCurrentlyCompleted = habit.progressForDate(targetDate) >= habit.goal
+        let before = habit.progressForDate(targetDate)
+        let after = max(0, before + delta)
 
-        if habit.isSkipped(on: targetDate) {
-            unskipDate(targetDate, for: habit)
-        }
-
-        let newProgress = isCurrentlyCompleted ? 0 : habit.goal
-        return updateProgress(to: newProgress, for: habit, date: targetDate)
+        return updateProgress(to: after, for: habit, date: targetDate)
     }
 
     @discardableResult
@@ -116,13 +116,8 @@ final class HabitService {
         return !wasCompleted && (newValue >= habit.goal)
     }
 
-    @discardableResult
-    func addProgress(_ delta: Int, to habit: Habit, date: Date) -> Bool {
-        let targetDate = calendar.startOfDay(for: date)
-        let before = habit.progressForDate(targetDate)
-        let after = max(0, before + delta)
-
-        return updateProgress(to: after, for: habit, date: targetDate)
+    func resetProgress(for habit: Habit, date: Date) {
+        updateProgress(to: 0, for: habit, date: date)
     }
 
     func saveProgress(_ value: Int, for habit: Habit, date: Date) {
@@ -143,6 +138,36 @@ final class HabitService {
         saveAndRefresh()
     }
 
+    @discardableResult
+    func completeHabit(for habit: Habit, date: Date) -> Bool {
+        let targetDate = calendar.startOfDay(for: date)
+        let isCurrentlyCompleted = habit.progressForDate(targetDate) >= habit.goal
+
+        if habit.isSkipped(on: targetDate) {
+            unskipDate(targetDate, for: habit)
+        }
+
+        let newProgress = isCurrentlyCompleted ? 0 : habit.goal
+        return updateProgress(to: newProgress, for: habit, date: targetDate)
+    }
+
+    // MARK: - Temporary Progress (UI cache)
+
+    func setTemporaryProgress(for habitId: UUID, date: Date, progress: Int) {
+        let key = makeKey(for: habitId, date: date)
+        temporaryProgress[key] = progress
+    }
+
+    func getTemporaryProgress(for habitId: UUID, date: Date) -> Int? {
+        let key = makeKey(for: habitId, date: date)
+        return temporaryProgress[key]
+    }
+
+    func clearTemporaryProgress(for habitId: UUID, date: Date) {
+        let key = makeKey(for: habitId, date: date)
+        temporaryProgress.removeValue(forKey: key)
+    }
+
     // MARK: - Skip Management
 
     func skipDate(_ date: Date, for habit: Habit) {
@@ -160,24 +185,6 @@ final class HabitService {
         let targetDate = calendar.startOfDay(for: date)
 
         habit.skippedDates.removeAll { calendar.isDate($0, inSameDayAs: targetDate) }
-        saveAndRefresh()
-    }
-
-    // MARK: - Lifecycle Management
-
-    func archive(_ habit: Habit) {
-        habit.isArchived = true
-        saveAndRefresh()
-    }
-
-    func unarchive(_ habit: Habit) {
-        habit.isArchived = false
-        saveAndRefresh()
-    }
-
-    func delete(_ habit: Habit) {
-        notificationManager.cancelNotifications(for: habit)
-        modelContext.delete(habit)
         saveAndRefresh()
     }
 

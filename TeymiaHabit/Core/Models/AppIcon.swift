@@ -2,14 +2,14 @@ import SwiftUI
 
 enum AppIcon: String, CaseIterable, Identifiable {
     case main = "AppIcon"
-    case dark = "AppIconDark"
-    case mandarin = "AppIconMandarin"
-    case mint = "AppIconMint"
-    case raspberry = "AppIconRaspberry"
-    case lime = "AppIconLime"
-    case bumblebee = "AppIconBumblebee"
-    case midnightIndigo = "AppIconMidnightIndigo"
-    case lagoon = "AppIconLagoon"
+    case dark = "AppIcon-Dark"
+    case mandarin = "AppIcon-Mandarin"
+    case mint = "AppIcon-Mint"
+    case raspberry = "AppIcon-Raspberry"
+    case lime = "AppIcon-Lime"
+    case bumblebee = "AppIcon-Bumblebee"
+    case midnightIndigo = "AppIcon-MidnightIndigo"
+    case lagoon = "AppIcon-Lagoon"
 
     var id: String { rawValue }
 

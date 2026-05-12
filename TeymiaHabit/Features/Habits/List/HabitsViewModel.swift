@@ -1,26 +1,23 @@
-import SwiftData
 import SwiftUI
 
 @Observable @MainActor
 final class HabitsViewModel {
-    private let modelContext: ModelContext
-    private let habitService: HabitService
+    private let habitService: any HabitServiceProtocol
     private let soundManager: SoundManager
     private let timerService: TimerService
     private let widgetService: WidgetService
     private let notificationManager: NotificationManager
 
     var allBaseHabits: [Habit] = []
+    var calendarUpdateTrigger = false
 
     init(
-        modelContext: ModelContext,
-        habitService: HabitService,
+        habitService: any HabitServiceProtocol,
         notificationManager: NotificationManager,
         soundManager: SoundManager,
         widgetService: WidgetService,
         timerService: TimerService
     ) {
-        self.modelContext = modelContext
         self.habitService = habitService
         self.notificationManager = notificationManager
         self.soundManager = soundManager
@@ -42,6 +39,10 @@ final class HabitsViewModel {
 
     func getEffectiveProgress(for habit: Habit, on date: Date) -> Int {
         habitService.effectiveProgress(for: habit, on: date)
+    }
+
+    private func triggerCalendarUpdate() {
+        calendarUpdateTrigger.toggle()
     }
 
     private func handleResult(_ didComplete: Bool) {
@@ -74,6 +75,7 @@ final class HabitsViewModel {
             }
         }
 
+        triggerCalendarUpdate()
         saveAndReloadWithDebounce(for: habit.uuid, date: date)
     }
 
@@ -121,13 +123,7 @@ final class HabitsViewModel {
         let sourceIndices = IndexSet(habitsToMove.compactMap { updatedAllHabits.firstIndex(of: $0) })
         updatedAllHabits.move(fromOffsets: sourceIndices, toOffset: targetIndex)
 
-        for (index, habit) in updatedAllHabits.enumerated() {
-            habit.displayOrder = index
-        }
-
-        // Save reorder through dataSource
-        try? modelContext.save()
-        widgetService.reloadWidgetsAfterDataChange()
+        habitService.reorderHabits(updatedAllHabits)
     }
 
     // MARK: - Timer
@@ -142,8 +138,6 @@ final class HabitsViewModel {
     // MARK: - Debounce
 
     private func saveAndReloadWithDebounce(for uuid: UUID, date: Date) {
-        try? modelContext.save()
-        widgetService.reloadWidgetsAfterDataChange()
         Task {
             try? await Task.sleep(for: .seconds(0.6))
             habitService.clearTemporaryProgress(for: uuid, date: date)

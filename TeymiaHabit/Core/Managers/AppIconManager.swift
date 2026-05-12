@@ -3,29 +3,36 @@ import SwiftUI
 @MainActor
 @Observable
 final class AppIconManager {
-    var currentIcon: AppIcon
+    private(set) var currentIcon: AppIcon = .main
 
     init() {
-        let iconName = UIApplication.shared.alternateIconName
-        if let iconName, let icon = AppIcon(rawValue: iconName) {
-            self.currentIcon = icon
+        syncWithSystem()
+    }
+
+    func syncWithSystem() {
+        if let iconName = UIApplication.shared.alternateIconName,
+           let icon = AppIcon(rawValue: iconName) {
+            currentIcon = icon
         } else {
-            self.currentIcon = .main
+            currentIcon = .main
         }
     }
 
     func setAppIcon(_ icon: AppIcon) {
-        let iconName: String? = (icon == .main) ? nil : icon.rawValue
+        let iconName = icon.name
 
-        guard UIApplication.shared.alternateIconName != iconName else { return }
+        guard UIApplication.shared.supportsAlternateIcons,
+              UIApplication.shared.alternateIconName != iconName else { return }
 
-        UIApplication.shared.setAlternateIconName(iconName) { error in
-            if error == nil {
+        currentIcon = icon
+
+        UIApplication.shared.setAlternateIconName(iconName) { [weak self] error in
+            if let error {
+                print("Failed to change icon: \(error.localizedDescription)")
                 Task { @MainActor in
-                    self.currentIcon = icon
+                    self?.syncWithSystem()
                 }
             }
         }
     }
 }
-

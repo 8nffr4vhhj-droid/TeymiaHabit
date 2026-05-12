@@ -10,7 +10,7 @@ struct GoalRow: View {
         static let inactiveBlur: CGFloat = 5
         static let inactiveOffset: CGFloat = 10
         static let pickerWidth: CGFloat = 200
-        static let refDate = Calendar.current.startOfDay(for: .distantPast)
+        static let maxCount = 999_999
     }
 
     var body: some View {
@@ -27,7 +27,6 @@ struct GoalRow: View {
     }
 
     // MARK: - Subviews
-
     private var typeSelectorRow: some View {
         Label {
             HStack {
@@ -51,9 +50,23 @@ struct GoalRow: View {
         let isActive = selectedType == type
 
         Label {
-            goalRowContent(for: type)
+            HStack {
+                if type == .count {
+                    countField
+                    Spacer()
+                    countStepper
+                } else {
+                    Text("Choose time")
+                        .foregroundStyle(DS.Colors.secondary)
+                    Spacer()
+                    timePicker
+                }
+            }
+            .frame(height: Constants.rowHeight)
         } icon: {
-            goalRowIcon(for: type)
+            Image(systemName: type == .count ? "number" : "clock.arrow.2.circlepath")
+                .font(.system(size: DS.IconSize.xs, weight: .medium))
+                .foregroundStyle(DS.Colors.secondary)
         }
         .font(DS.AppFont.bodyMedium)
         .opacity(isActive ? 1 : 0)
@@ -62,82 +75,32 @@ struct GoalRow: View {
         .allowsHitTesting(isActive)
     }
 
-    @ViewBuilder
-    private func goalRowContent(for type: HabitType) -> some View {
-        HStack {
-            if type == .count {
-                countField
-            } else {
-                Text("Choose time")
-                    .foregroundStyle(.secondary.opacity(0.8))
-            }
-
-            Spacer()
-
-            if type == .count {
-                countStepper
-            } else {
-                DatePicker("", selection: timeBinding, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-            }
-        }
-        .frame(height: Constants.rowHeight)
-    }
-
-    private func goalRowIcon(for type: HabitType) -> some View {
-        Image(systemName: type == .count
-              ? "number"
-              : "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted")
-        .font(.system(size: DS.IconSize.xs, weight: .medium))
-        .foregroundStyle(DS.Colors.secondary.opacity(0.5))
-    }
-
-    // MARK: - Count Controls
-
-    // Rationale: countText is the Single Source of Truth to avoid String-to-Int sync issues.
-    // Stepper and TextField both read/write directly to config.countText.
-
     private var countField: some View {
         TextField("Enter count", text: $config.countText)
             .keyboardType(.numberPad)
             .focused($focus, equals: .count)
             .foregroundStyle(.primary)
             .onChange(of: config.countText) { _, newValue in
-                // Strip non-numeric characters and enforce the upper bound
                 let digits = newValue.filter(\.isNumber)
-                let clamped = Int(digits).map { min($0, 999_999) }
-                config.countText = clamped.map(String.init) ?? (digits.isEmpty ? "" : digits)
+                if let value = Int(digits), value > Constants.maxCount {
+                    config.countText = String(Constants.maxCount)
+                } else {
+                    config.countText = digits
+                }
             }
     }
 
     private var countStepper: some View {
-        // Stepper reads parsedCount (or 1 as fallback) and writes back to countText.
-        // This keeps countText as the only source of truth.
-        let currentValue = config.parsedCount ?? 1
-        return Stepper("", value: Binding(
-            get: { currentValue },
-            set: { config.countText = String(min(max(1, $0), 999_999)) }
-        ), in: 1...999_999)
+        Stepper("", value: Binding(
+            get: { config.parsedCount ?? 1 },
+            set: { config.countText = String(min(max(1, $0), Constants.maxCount)) }
+        ), in: 1...Constants.maxCount)
         .labelsHidden()
     }
 
-    // MARK: - Time Helpers
-
-    private var timeBinding: Binding<Date> {
-        Binding(
-            get: {
-                Calendar.current.date(
-                    bySettingHour: config.hours,
-                    minute: config.minutes,
-                    second: 0,
-                    of: Constants.refDate
-                ) ?? Constants.refDate
-            },
-            set: { newValue in
-                config.hours   = Calendar.current.component(.hour, from: newValue)
-                config.minutes = Calendar.current.component(.minute, from: newValue)
-            }
-        )
+    private var timePicker: some View {
+        DatePicker("", selection: $config.dateRepresentation, displayedComponents: .hourAndMinute)
+            .datePickerStyle(.compact)
+            .labelsHidden()
     }
 }

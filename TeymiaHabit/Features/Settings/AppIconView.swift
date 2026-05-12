@@ -20,20 +20,21 @@ struct AppIconRow: View {
 
 struct AppIconView: View {
     @Environment(AppDependencyContainer.self) private var appContainer
-    @State private var currentIcon: AppIcon = .main
+
+    private static let lockBadgeOffset: CGFloat = 7
 
     var body: some View {
         List {
             Section {
                 ForEach(AppIcon.allCases) { icon in
                     let isLocked = !appContainer.storeKitService.canUseIcon(icon)
+                    let isCurrent = appContainer.iconManager.currentIcon == icon
 
                     Button {
-                        if !isLocked {
-                            appContainer.iconManager.setAppIcon(icon)
-                            withAnimation(.spring()) { currentIcon = icon }
-                        } else {
+                        if isLocked {
                             appContainer.showingPaywall = true
+                        } else {
+                            appContainer.iconManager.setAppIcon(icon)
                         }
                     } label: {
                         HStack(spacing: DS.Spacing.reg) {
@@ -42,25 +43,25 @@ struct AppIconView: View {
 
                                 if isLocked {
                                     PremiumLockBadge()
-                                        .offset(x: 6, y: -6)
+                                        .offset(x: Self.lockBadgeOffset, y: -Self.lockBadgeOffset)
                                 }
                             }
 
-                            Text(icon.title).foregroundStyle(Color.primary)
+                            Text(icon.title)
+                                .foregroundStyle(DS.Colors.primary)
 
                             Spacer()
 
-                            if currentIcon == icon {
-                                SelectionCheckmark()
-                            }
+                            if isCurrent { SelectionCheckmark() }
                         }
                     }
                 }
             }
         }
         .navigationTitle("App Icon")
+        .animation(DS.Animations.easeInOut, value: appContainer.iconManager.currentIcon)
         .onAppear {
-            currentIcon = appContainer.iconManager.currentIcon
+            appContainer.iconManager.syncWithSystem()
         }
     }
 }
@@ -68,16 +69,19 @@ struct AppIconView: View {
 struct AppIconImage: View {
     let icon: AppIcon
 
+    private static let size: CGFloat = 48
+    private static let lineWidth: CGFloat = 0.5
+    private static let cornerRadius = DS.Radius.sm
+
     var body: some View {
         Image(icon.previewImageName)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 48, height: 48)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-            )
+            .frame(size: Self.size)
+            .clipShape(.rect(cornerRadius: Self.cornerRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                    .stroke(DS.Colors.tertiary, lineWidth: Self.lineWidth)
+            }
     }
 }
-

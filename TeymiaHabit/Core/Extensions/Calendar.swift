@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 extension Calendar {
     static var userPreferred: Calendar {
@@ -9,43 +9,35 @@ extension Calendar {
 }
 
 extension Date {
+
     func formattedAsNavigationTitle() -> String {
-        if Calendar.current.isDateInToday(self) { return "Today".capitalized }
-        if Calendar.current.isDateInYesterday(self) { return "Yesterday".capitalized }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM"
-        return formatter.string(from: self).capitalized
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(self) {
+            return String(localized: "Today").capitalized
+        }
+
+        if calendar.isDateInYesterday(self) {
+            return String(localized: "Yesterday").capitalized
+        }
+
+        return self.formatted(.dateTime.day().month(.wide)).capitalized
     }
 }
 
-extension DateFormatter {
-
-    static let nominativeMonthYear: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "LLLL yyyy"
-        return formatter
-    }()
-
-    static let nominativeMonth: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "LLLL"
-        return formatter
-    }()
-
-    static func capitalizedNominativeMonthYear(from date: Date) -> String {
-        let dateString = nominativeMonthYear.string(from: date)
-        return dateString.capitalizingFirstLetter()
+extension Date {
+    func nominativeMonthYear() -> String {
+        self.formatted(.dateTime.month(.wide).year()).capitalizingFirstLetter()
     }
 
-    static func capitalizedNominativeMonth(from date: Date) -> String {
-        let dateString = nominativeMonth.string(from: date)
-        return dateString.capitalizingFirstLetter()
+    func nominativeMonth() -> String {
+        self.formatted(.dateTime.month(.wide)).capitalizingFirstLetter()
     }
 }
 
 private extension String {
     func capitalizingFirstLetter() -> String {
-        guard let firstChar = self.first else { return self }
-        return String(firstChar).uppercased() + self.dropFirst()
+        guard !isEmpty else { return self }
+        return prefix(1).uppercased() + dropFirst()
     }
 }

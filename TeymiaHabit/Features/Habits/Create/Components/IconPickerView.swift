@@ -92,7 +92,7 @@ struct IconPickerView: View {
 
     // MARK: - Private Views
 
-    private func sectionHeader(_ title: LocalizedStringResource) -> some View {
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
         Text(title)
             .font(DS.AppFont.title2)
             .foregroundStyle(DS.Colors.primary)

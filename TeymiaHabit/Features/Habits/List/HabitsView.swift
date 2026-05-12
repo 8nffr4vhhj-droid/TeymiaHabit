@@ -3,19 +3,17 @@ import SwiftData
 
 struct HabitsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppDependencyContainer.self) private var appContainer
     @Binding var selectedDate: Date
-    @State private var vm: HabitsViewModel
 
-    init(selectedDate: Binding<Date>, appContainer: AppDependencyContainer, modelContext: ModelContext) {
-        self._selectedDate = selectedDate
-        self._vm = State(wrappedValue: HabitsViewModel(
-            modelContext: modelContext,
+    private var vm: HabitsViewModel {
+        HabitsViewModel(
             habitService: appContainer.habitService,
             notificationManager: appContainer.notificationManager,
             soundManager: appContainer.soundManager,
             widgetService: appContainer.widgetService,
             timerService: appContainer.timerService
-        ))
+        )
     }
 
     var body: some View {
@@ -43,7 +41,9 @@ struct HabitsContentView: View {
     var body: some View {
         Group {
             if allHabits.isEmpty {
-                emptyView
+                HabitsEmptyView {
+                    showingNewHabit = true
+                }
             } else {
                 habitsList
             }
@@ -66,6 +66,7 @@ struct HabitsContentView: View {
             selectedHabit = habit
             appContainer.navManager.habitToOpen = nil
         }
+        .sensoryFeedback(.selection, trigger: showingNewHabit)
     }
 
     // MARK: - Toolbar
@@ -123,7 +124,6 @@ struct HabitsContentView: View {
                 Image(systemName: "plus")
             }
             .tint(DS.Colors.primary)
-            .sensoryFeedback(.selection, trigger: showingNewHabit)
         }
     }
 
@@ -207,37 +207,6 @@ struct HabitsContentView: View {
         }
         selection.removeAll()
         editMode = .inactive
-    }
-
-    // MARK: - Empty View
-
-    private var emptyView: some View {
-        ContentUnavailableView {
-            Label {
-                Text("No Habits")
-                    .padding(.bottom, DS.Spacing.xxl)
-            } icon: {
-                Image(systemName: "")
-            }
-            .foregroundStyle(DS.Colors.primary)
-        } actions: {
-            Button {
-                showingNewHabit = true
-            } label: {
-                Label {
-                    Text("Create Habit")
-                } icon: {
-                    Image(systemName: "plus")
-                }
-                .font(DS.AppFont.headline)
-                .foregroundStyle(DS.Colors.onPrimary)
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.vertical, DS.Spacing.sm)
-            }
-            .buttonStyle(.plain)
-            .glassEffect(.regular.interactive().tint(DS.Colors.primary), in: .capsule)
-            .sensoryFeedback(.selection, trigger: showingNewHabit)
-        }
     }
 
     // MARK: - Swipe Actions
