@@ -33,7 +33,7 @@ final class BarChartViewModel {
 
         switch range {
         case .week:  return formatWeeklyRange(for: date)
-        case .month: return date.nominativeMonthYear()
+        case .month: return date.nominativeMonth()
         case .year:  return "\(calendar.component(.year, from: date))"
         }
     }
@@ -228,7 +228,7 @@ extension BarChartViewModel {
     func formatSelectionTitle(for date: Date) -> String {
         range == .year
         ? date.nominativeMonth()
-        : date.formatted(.dateTime.day().month().year()).capitalized
+        : date.formatted(.dateTime.day().month(.wide)).capitalized
     }
 
     func formatWeeklyRange(for date: Date) -> String {
@@ -245,47 +245,53 @@ extension BarChartViewModel {
         let eDay = calendar.component(.day, from: endOfWeek)
         let sMonth = calendar.component(.month, from: startOfWeek)
         let eMonth = calendar.component(.month, from: endOfWeek)
-        let sYear = calendar.component(.year, from: startOfWeek)
-        let eYear = calendar.component(.year, from: endOfWeek)
 
         let df = DateFormatter()
         df.locale = Locale.current
-
-        if sYear != eYear {
-            df.dateFormat = "d MMM yyyy"
-            return "\(df.string(from: startOfWeek)) – \(df.string(from: endOfWeek))"
-        }
 
         if sMonth != eMonth {
             df.dateFormat = "d MMM"
             let startStr = df.string(from: startOfWeek)
             let endStr = df.string(from: endOfWeek)
-            return "\(startStr) – \(endStr) \(sYear)"
+            return "\(startStr) – \(endStr)"
         }
 
-        df.dateFormat = "MMM yyyy"
+        df.dateFormat = "MMM"
         return "\(sDay) – \(eDay) \(df.string(from: startOfWeek))"
     }
 }
 
 // MARK: - Y-Axis
 extension BarChartViewModel {
-    var yAxisValues: [Double] {
-        let rawMax = maxChartValue
+//    var yAxisValues: [Double] {
+//        let rawMax = maxChartValue
+//
+//        if habit.type == .time {
+//            let maxHours = ceil(rawMax / 3600.0)
+//            let finalMaxHours = maxHours.truncatingRemainder(dividingBy: 2) == 0 ? maxHours : maxHours + 1
+//
+//            return [0, (finalMaxHours / 2) * 3600, finalMaxHours * 3600]
+//        } else {
+//            let maxVal = ceil(rawMax)
+//            let finalMax = maxVal.truncatingRemainder(dividingBy: 2) == 0 ? maxVal : maxVal + 1
+//            return [0, finalMax / 2, finalMax]
+//        }
+//    }
 
-        if habit.type == .time {
-            let maxHours = ceil(rawMax / 3600.0)
-            let finalMaxHours = maxHours.truncatingRemainder(dividingBy: 2) == 0 ? maxHours : maxHours + 1
+//    var adjustedMaxY: Double {
+//        yAxisValues.last ?? maxChartValue
+//    }
+    func formatMinutesToReadable(_ minutes: Double) -> String {
+        let totalMinutes = Int(minutes)
+        let hours = totalMinutes / 60
+        let mins = totalMinutes % 60
 
-            return [0, (finalMaxHours / 2) * 3600, finalMaxHours * 3600]
-        } else {
-            let maxVal = ceil(rawMax)
-            let finalMax = maxVal.truncatingRemainder(dividingBy: 2) == 0 ? maxVal : maxVal + 1
-            return [0, finalMax / 2, finalMax]
+        if hours > 0 {
+            if mins > 0 {
+                return "\(hours)h \(mins)m"
+            }
+            return "\(hours)h"
         }
-    }
-
-    var adjustedMaxY: Double {
-        yAxisValues.last ?? maxChartValue
+        return "\(mins)m"
     }
 }

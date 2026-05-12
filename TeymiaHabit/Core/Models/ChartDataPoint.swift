@@ -44,6 +44,10 @@ struct ChartDataPoint: Identifiable, Equatable {
     var formattedValueWithoutSeconds: String {
         habitType == .count ? "\(value)" : value.formattedAsChartDuration()
     }
+
+    var displayValue: Double {
+        habitType == .time ? Double(value) / 60.0 : Double(value)
+    }
 }
 
 enum ChartTimeRange: String, CaseIterable {

@@ -9,24 +9,24 @@ struct OnboardingView: View {
             items: [
                 .init(
                     id: 0,
-                    title: "",
-                    subtitle: "",
+                    title: "Start Build Habits",
+                    subtitle: "Create habit in seconds and start improving your daily routine",
                     screenshot: UIImage(
                         named: "Onboarding"
                     )
                 ),
                 .init(
                     id: 1,
-                    title: "",
-                    subtitle: "",
+                    title: "Track Every Day",
+                    subtitle: "You can swipe for quick actions",
                     screenshot: UIImage(
                         named: "Onboarding1"
                     )
                 ),
                 .init(
                     id: 2,
-                    title: "",
-                    subtitle: "",
+                    title: "Stay Focused",
+                    subtitle: "Track every second and every step toward your goal.",
                     screenshot: UIImage(
                         named: "Onboarding2"
                     ),
@@ -35,8 +35,8 @@ struct OnboardingView: View {
                 ),
                 .init(
                     id: 3,
-                    title: "",
-                    subtitle: "",
+                    title: "Monthly Overview",
+                    subtitle: "See your consistency with a calendar view",
                     screenshot: UIImage(
                         named: "Onboarding3"
                     ),
@@ -48,8 +48,8 @@ struct OnboardingView: View {
                 ),
                 .init(
                     id: 4,
-                    title: "",
-                    subtitle: "",
+                    title: "Detailed Insights",
+                    subtitle: "Analyze your habits with powerful charts and statistics.",
                     screenshot: UIImage(
                         named: "Onboarding4"
                     )
@@ -90,7 +90,7 @@ struct OnboardingContentView: View {
                 .padding(.horizontal, DS.Spacing.xxl)
                 .padding(.bottom, 220)
 
-            VStack(spacing: DS.Spacing.xs) {
+            VStack(spacing: DS.Spacing.sm) {
                 TextContentView()
                 IndicatorView()
                 ContinueButton()
@@ -195,8 +195,10 @@ struct OnboardingContentView: View {
                             Text(item.subtitle)
                                 .font(DS.AppFont.bodyMedium)
                                 .lineLimit(2)
-                                .foregroundStyle(DS.Colors.primary.opacity(0.8))
+                                .foregroundStyle(DS.Colors.primary.opacity(0.7))
                         }
+                        .padding(DS.Spacing.reg)
+                        .multilineTextAlignment(.center)
                         .frame(width: size.width)
                         .compositingGroup()
                         .blur(radius: isActive ? 0 : 30)
@@ -248,7 +250,6 @@ struct OnboardingContentView: View {
         .tint(tint)
         .buttonStyle(.glassProminent)
         .buttonSizing(.flexible)
-        .padding(.horizontal, DS.Spacing.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
     }
 

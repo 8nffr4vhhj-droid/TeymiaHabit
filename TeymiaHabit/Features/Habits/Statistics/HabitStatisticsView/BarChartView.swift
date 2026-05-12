@@ -65,8 +65,8 @@ struct BarChartView: View {
                 selectionOverlay
 
                 BarMark(
-                    x: .value("", dataPoint.date, unit: vm.range == .year ? .month : .day),
-                    y: .value("", Double(dataPoint.value))
+                    x: .value("", dataPoint.date, unit: vm.range.xUnit),
+                    y: .value("", dataPoint.displayValue)
                 )
                 .foregroundStyle(vm.chartGradient)
                 .cornerRadius(Constants.barCornerRadius(for: vm.range))
@@ -76,7 +76,7 @@ struct BarChartView: View {
             .chartXSelection(value: $vm.selectedDate.animation(DS.Animations.easeInOut))
             .chartXAxis { xAxisMarks }
             .chartYAxis { yAxisMarks }
-            .chartYScale(domain: 0...vm.adjustedMaxY)
+            .chartYScale(domain: .automatic(includesZero: habit.type == .count))
         }
     }
 
@@ -98,12 +98,12 @@ struct BarChartView: View {
 
     @AxisContentBuilder
     private var yAxisMarks: some AxisContent {
-        AxisMarks(values: vm.yAxisValues) { value in
+        AxisMarks { value in
             AxisGridLine(stroke: StrokeStyle(lineWidth: Constants.gridLineWidth))
                 .foregroundStyle(Constants.yAxisColor)
             AxisValueLabel {
-                if let doubleValue = value.as(Double.self) {
-                    Text(vm.formatYAxis(doubleValue))
+                if let minutes = value.as(Double.self) {
+                    Text(vm.formatMinutesToReadable(minutes))
                         .font(DS.AppFont.caption)
                         .foregroundStyle(DS.Colors.secondary)
                 }

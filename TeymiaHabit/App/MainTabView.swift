@@ -58,7 +58,11 @@ struct MainTabView: View {
     private var tabContent: some TabContent<AppTab> {
         Tab(AppTab.habits.title, systemImage: AppTab.habits.symbolImage, value: .habits) {
             NavigationStack {
-                HabitsView(selectedDate: $selectedDate)
+                HabitsView(
+                    selectedDate: $selectedDate,
+                    appContainer: appContainer,
+                    modelContext: modelContext
+                )
             }
         }
 

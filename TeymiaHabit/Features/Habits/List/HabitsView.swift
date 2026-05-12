@@ -2,18 +2,21 @@ import SwiftUI
 import SwiftData
 
 struct HabitsView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(AppDependencyContainer.self) private var appContainer
+    @Environment(\.modelContext) private var modelContext
     @Binding var selectedDate: Date
+    @State private var vm: HabitsViewModel
 
-    private var vm: HabitsViewModel {
-        HabitsViewModel(
+    init(selectedDate: Binding<Date>, appContainer: AppDependencyContainer, modelContext: ModelContext) {
+        self._selectedDate = selectedDate
+        self._vm = State(wrappedValue: HabitsViewModel(
+            modelContext: modelContext,
             habitService: appContainer.habitService,
             notificationManager: appContainer.notificationManager,
             soundManager: appContainer.soundManager,
             widgetService: appContainer.widgetService,
             timerService: appContainer.timerService
-        )
+        ))
     }
 
     var body: some View {
@@ -218,9 +221,14 @@ struct HabitsContentView: View {
         Button {
             vm.completeHabit(habit, date: selectedDate)
         } label: {
-            Label("", systemImage: isCompleted ? "arrow.uturn.backward" : "checkmark")
+            Label {
+                Text("")
+            } icon: {
+                Image(systemName: isCompleted ? "arrow.uturn.backward" : "checkmark")
+                    .fontWeight(.bold)
+            }
         }
-        .tint(isCompleted ? .red : .green)
+        .tint(isCompleted ? .appRed : .appMint)
 
         let isSkipped = habit.isSkipped(on: selectedDate)
 
@@ -229,7 +237,7 @@ struct HabitsContentView: View {
         } label: {
             Label("", systemImage: isSkipped ? "arrow.left" : "arrow.right")
         }
-        .tint(.gray)
+        .tint(.appGray)
     }
 }
 

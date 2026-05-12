@@ -101,7 +101,6 @@ struct HabitDetailContentView: View {
                     HabitStatisticsView(habit: habit)
                 }
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Content
@@ -212,6 +211,7 @@ struct HabitDetailContentView: View {
                         .fill(.white.opacity(0.1))
                 }
         }
+        .preferredColorScheme(.dark)
         .tint(DS.Colors.primary)
     }
 

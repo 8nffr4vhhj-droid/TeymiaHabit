@@ -1,7 +1,9 @@
 import SwiftUI
+import SwiftData
 
 @Observable @MainActor
 final class HabitsViewModel {
+    private let modelContext: ModelContext
     private let habitService: any HabitServiceProtocol
     private let soundManager: SoundManager
     private let timerService: TimerService
@@ -12,12 +14,14 @@ final class HabitsViewModel {
     var calendarUpdateTrigger = false
 
     init(
+        modelContext: ModelContext,
         habitService: any HabitServiceProtocol,
         notificationManager: NotificationManager,
         soundManager: SoundManager,
         widgetService: WidgetService,
         timerService: TimerService
     ) {
+        self.modelContext = modelContext
         self.habitService = habitService
         self.notificationManager = notificationManager
         self.soundManager = soundManager
