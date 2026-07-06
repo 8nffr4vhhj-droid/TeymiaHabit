@@ -9,15 +9,13 @@ struct HabitsView: View {
     @Environment(HabitService.self) private var habitService
     @Environment(SoundManager.self) private var soundManager
     @Environment(TimerService.self) private var timerService
-    @Environment(StoreKitService.self) private var storeKitService
 
     var body: some View {
         HabitsContentView(
             selectedDate: $selectedDate,
             habitService: habitService,
             soundManager: soundManager,
-            timerService: timerService,
-            storeKitService: storeKitService
+            timerService: timerService
         )
     }
 }
@@ -32,9 +30,6 @@ private struct HabitsContentView: View {
     @State private var selectedHabit: Habit?
     @State private var habitToEdit: Habit?
     @State private var showingTemplates = false
-    @State private var showingPaywall = false
-
-    private let storeKitService: StoreKitService
 
     @Namespace private var namespace
 
@@ -42,11 +37,9 @@ private struct HabitsContentView: View {
         selectedDate: Binding<Date>,
         habitService: HabitService,
         soundManager: SoundManager,
-        timerService: TimerService,
-        storeKitService: StoreKitService
+        timerService: TimerService
     ) {
         _selectedDate = selectedDate
-        self.storeKitService = storeKitService
         _viewModel = State(wrappedValue: HabitsViewModel(
             habitService: habitService,
             soundManager: soundManager,
@@ -79,9 +72,6 @@ private struct HabitsContentView: View {
         }
         .sheet(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit, date: selectedDate)
-        }
-        .fullScreenCover(isPresented: $showingPaywall) {
-            PaywallView()
         }
     }
 
@@ -127,11 +117,7 @@ private struct HabitsContentView: View {
 
         ToolbarItem(placement: .primaryAction) {
             Button {
-                if allHabits.count < storeKitService.maxHabitsCount {
-                    showingTemplates = true
-                } else {
-                    showingPaywall = true
-                }
+                showingTemplates = true
             } label: {
                 Image(systemName: "plus")
                     .matchedTransitionSource(id: TransitionID.templates, in: namespace)

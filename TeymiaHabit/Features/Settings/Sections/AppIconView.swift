@@ -106,13 +106,9 @@ private struct LayoutAdjustmentValues {
 }
 
 struct AppIconView: View {
-    @Environment(StoreKitService.self) private var storeKitService
     @State private var appIconManager = AppIconManager()
     @State private var activeIndex: Int?
     @State private var elevation: CGFloat = 35
-    @State private var showingPaywall = false
-
-    private static let lockBadgeOffset: CGFloat = 7
 
     var body: some View {
         VStack(spacing: 0) {
@@ -125,26 +121,14 @@ struct AppIconView: View {
                     activeIndex: $activeIndex
                 ) {
                     ForEach(AppIcon.allCases) { icon in
-                        let isLocked = !storeKitService.canUseIcon(icon)
                         let isCurrent = appIconManager.currentIcon == icon
 
                         Button {
-                            if isLocked {
-                                showingPaywall = true
-                            } else {
-                                appIconManager.setAppIcon(icon)
-                            }
+                            appIconManager.setAppIcon(icon)
                         } label: {
                             VStack(spacing: 8) {
-                                ZStack(alignment: .bottom) {
-                                    AppIconImage(icon: icon, size: 130)
-                                        .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
-
-                                    if isLocked {
-                                        PremiumLockBadge(size: IconSize.lg)
-                                            .offset(x: Self.lockBadgeOffset, y: -Self.lockBadgeOffset)
-                                    }
-                                }
+                                AppIconImage(icon: icon, size: 130)
+                                    .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
 
                                 Capsule()
                                     .fill(isCurrent ? Color.indigo : Color.clear)
@@ -184,16 +168,11 @@ struct AppIconView: View {
 
             if let currentIndex = activeIndex {
                 let icon = AppIcon.allCases[currentIndex]
-                let isLocked = !storeKitService.canUseIcon(icon)
                 let isCurrent = appIconManager.currentIcon == icon
-                let buttonState = isLocked ? ButtonState.locked : (isCurrent ? .selected : .available)
+                let buttonState: ButtonState = isCurrent ? .selected : .available
 
                 Button {
-                    if isLocked {
-                        showingPaywall = true
-                    } else {
-                        appIconManager.setAppIcon(icon)
-                    }
+                    appIconManager.setAppIcon(icon)
                 } label: {
                     SelectButtonContent(state: buttonState)
                 }
@@ -210,9 +189,6 @@ struct AppIconView: View {
             if let index = AppIcon.allCases.firstIndex(of: appIconManager.currentIcon) {
                 activeIndex = index
             }
-        }
-        .fullScreenCover(isPresented: $showingPaywall) {
-            PaywallView()
         }
     }
 }
@@ -233,7 +209,6 @@ private struct SelectButtonContent: View {
 
     private var title: LocalizedStringKey {
         switch state {
-        case .locked: return "Unlock"
         case .selected: return "Selected"
         case .available: return "Select"
         }
@@ -241,7 +216,6 @@ private struct SelectButtonContent: View {
 
     private var foregroundColor: Color {
         switch state {
-        case .locked: return .white
         case .selected: return .black
         case .available: return .onPrimary
         }
@@ -250,8 +224,6 @@ private struct SelectButtonContent: View {
     @ViewBuilder
     private var backgroundView: some View {
         switch state {
-        case .locked:
-            PremiumGradientColors.gradient
         case .selected:
             Color.appTertiary
         case .available:
@@ -261,7 +233,6 @@ private struct SelectButtonContent: View {
 }
 
 enum ButtonState {
-    case locked
     case selected
     case available
 }
@@ -359,6 +330,5 @@ extension Array {
 #Preview {
     NavigationStack {
         AppIconView()
-            .environment(StoreKitService())
     }
 }

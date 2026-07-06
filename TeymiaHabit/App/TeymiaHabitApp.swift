@@ -9,7 +9,6 @@ struct TeymiaHabitApp: App {
     @State private var notificationManager: NotificationManager
     @State private var timerService: TimerService
     @State private var soundManager = SoundManager()
-    @State private var storeKitService = StoreKitService()
     @State private var healthKitManager = HealthKitManager()
     @State private var habitService: HabitService
 
@@ -33,9 +32,7 @@ struct TeymiaHabitApp: App {
                 .environment(notificationManager)
                 .environment(soundManager)
                 .environment(timerService)
-                .environment(storeKitService)
                 .environment(healthKitManager)
-                .task { await storeKitService.loadProducts() }
                 .onAppear { hasCompletedOnboarding = false } // TODO: remove for production
                 .sheet(isPresented: $hasCompletedOnboarding) {
                     OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)

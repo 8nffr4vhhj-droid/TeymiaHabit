@@ -15,9 +15,7 @@ struct SoundsRow: View {
 struct SoundsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SoundManager.self) private var soundManager
-    @Environment(StoreKitService.self) private var storeKitService
     @Environment(NotificationManager.self) private var notificationManager
-    @State private var showingPaywall = false
     @State private var selectedTab: SoundTab = .completion
 
     enum SoundTab: String, CaseIterable {
@@ -58,9 +56,6 @@ struct SoundsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Sounds")
-        .sheet(isPresented: $showingPaywall) {
-            PaywallView()
-        }
     }
 
     // MARK: - Sections
@@ -79,23 +74,15 @@ struct SoundsView: View {
             if soundManager.isSoundEnabled {
                 Section {
                     ForEach(CompletionSound.allCases) { sound in
-                        let isLocked = !storeKitService.canUseSounds(sound)
-
                         SoundSelectionRowView(
                             sound: sound,
                             isSelected: soundManager.selectedSound == sound,
-                            isLocked: isLocked,
                             onPlay: {
                                 soundManager.playSound(sound)
                             },
                             onSelect: {
-                                if !isLocked {
-                                    soundManager.playSound(sound)
-                                    soundManager.setSelectedSound(sound)
-                                } else {
-                                    soundManager.playSound(sound)
-                                    showingPaywall = true
-                                }
+                                soundManager.playSound(sound)
+                                soundManager.setSelectedSound(sound)
                             }
                         )
                     }
@@ -108,27 +95,19 @@ struct SoundsView: View {
     private var notificationSection: some View {
         Section {
             ForEach(NotificationSound.allCases) { sound in
-                let isLocked = !storeKitService.canUseSounds(sound)
-
                 SoundSelectionRowView(
                     sound: sound,
                     isSelected: notificationManager.selectedNotificationSound == sound,
-                    isLocked: isLocked,
                     onPlay: {
                         soundManager.playNotificationPreview(sound)
                     },
                     onSelect: {
-                        if !isLocked {
-                            soundManager.playNotificationPreview(sound)
-                            Task {
-                                await notificationManager.setSelectedNotificationSound(
-                                    sound,
-                                    modelContext: modelContext
-                                )
-                            }
-                        } else {
-                            soundManager.playNotificationPreview(sound)
-                            showingPaywall = true
+                        soundManager.playNotificationPreview(sound)
+                        Task {
+                            await notificationManager.setSelectedNotificationSound(
+                                sound,
+                                modelContext: modelContext
+                            )
                         }
                     }
                 )
@@ -141,7 +120,6 @@ struct SoundsView: View {
 private struct SoundSelectionRowView<T: HabitSoundProtocol>: View {
     let sound: T
     let isSelected: Bool
-    let isLocked: Bool
     let onPlay: () -> Void
     let onSelect: () -> Void
 
@@ -166,7 +144,6 @@ private struct SoundSelectionRowView<T: HabitSoundProtocol>: View {
                 Text(sound.displayName)
                     .foregroundStyle(.primary)
                 Spacer()
-                if isLocked { PremiumLockCapsule() }
                 if isSelected { SelectionCheckmark() }
             }
             .contentShape(.rect)

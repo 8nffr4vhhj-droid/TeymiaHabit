@@ -5,11 +5,6 @@ struct SettingsView: View {
     var body: some View {
         List {
             Section {
-                PremiumRow()
-            }
-            .listRowBackground(Color.clear)
-
-            Section {
                 ThemeRow()
                 AppIconRow()
                 LanguageRow()

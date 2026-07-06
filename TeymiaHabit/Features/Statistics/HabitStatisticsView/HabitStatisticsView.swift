@@ -2,10 +2,8 @@ import SwiftUI
 
 struct HabitStatisticsView: View {
     let habit: Habit
-    @Environment(StoreKitService.self) private var storeKitService
     @Environment(\.dismiss) private var dismiss
     @State private var vm: HabitStatisticsViewModel
-    @State private var showingPaywall = false
 
     init(habit: Habit) {
         self.habit = habit
@@ -14,7 +12,6 @@ struct HabitStatisticsView: View {
 
     var body: some View {
         @Bindable var vm = vm
-        let isPremium = storeKitService.isPremium
 
         NavigationStack {
             Form {
@@ -42,12 +39,10 @@ struct HabitStatisticsView: View {
                     HStack(spacing: 0) {
                         Spacer(minLength: 0)
 
-                        lockedOverlay(isLocked: !isPremium) {
-                            MonthlyCalendarView(
-                                habit: habit,
-                                selectedDate: $vm.selectedDate
-                            )
-                        }
+                        MonthlyCalendarView(
+                            habit: habit,
+                            selectedDate: $vm.selectedDate
+                        )
                         .frame(maxWidth: 500)
 
                         Spacer(minLength: 0)
@@ -56,14 +51,12 @@ struct HabitStatisticsView: View {
                 .listRowInsets(EdgeInsets())
 
                 Section {
-                    lockedOverlay(isLocked: !isPremium) {
-                        VStack(spacing: Spacing.md) {
-                            TimeRangePicker(selection: $vm.barChartTimeRange)
-                            BarChartView(habit: habit, range: vm.barChartTimeRange)
-                                .id("\(habit.uuid.uuidString)-\(vm.barChartTimeRange.rawValue)")
-                        }
-                        .padding(.top, Spacing.reg)
+                    VStack(spacing: Spacing.md) {
+                        TimeRangePicker(selection: $vm.barChartTimeRange)
+                        BarChartView(habit: habit, range: vm.barChartTimeRange)
+                            .id("\(habit.uuid.uuidString)-\(vm.barChartTimeRange.rawValue)")
                     }
+                    .padding(.top, Spacing.reg)
                 } footer: {
                     HStack(spacing: Spacing.xxs) {
                         Image(systemName: "hand.tap")
@@ -81,44 +74,6 @@ struct HabitStatisticsView: View {
             .onChange(of: habit.completions) { _, _ in
                 vm.refresh()
             }
-            .sheet(isPresented: $showingPaywall) {
-                PaywallView()
-            }
-        }
-    }
-}
-
-private extension HabitStatisticsView {
-    @ViewBuilder
-    func lockedOverlay<Content: View>(isLocked: Bool, @ViewBuilder content: @escaping () -> Content) -> some View {
-        if isLocked {
-            ZStack {
-                content()
-                    .blur(radius: 6)
-                    .allowsHitTesting(false)
-
-                Button {
-                    showingPaywall = true
-                } label: {
-                    VStack(spacing: Spacing.reg) {
-                        PremiumLockBadge(size: IconSize.xxl)
-
-                        Text("Unlock Detailed Statistics")
-                            .font( .headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.primary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.vertical, Spacing.lg)
-                    .padding(.horizontal, Spacing.xl)
-                    .frame(maxWidth: 280)
-                    .glassEffect(.regular.interactive(false), in: .rect(cornerRadius: Radius.xl))
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, Spacing.lg)
-            }
-        } else {
-            content()
         }
     }
 }

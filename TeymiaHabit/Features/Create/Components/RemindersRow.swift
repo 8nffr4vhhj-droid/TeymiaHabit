@@ -6,11 +6,9 @@ struct RemindersRow: View {
     @Binding var reminderTimes: [Date]
 
     @Environment(NotificationManager.self) private var notificationManager
-    @Environment(StoreKitService.self) private var storeKitService
 
     @State private var isNotificationPermissionAlertPresented = false
     @State private var isProcessingToggle = false
-    @State private var showingPaywall = false
 
     private let item = NewHabitItem.reminders
 
@@ -81,14 +79,8 @@ struct RemindersRow: View {
             }
 
             Button {
-                let maxCount = storeKitService.maxRemindersCount
-
-                if reminderTimes.count < maxCount {
-                    withAnimation( Animations.easeInOut) {
-                        reminderTimes.append(Date())
-                    }
-                } else {
-                    showingPaywall = true
+                withAnimation( Animations.easeInOut) {
+                    reminderTimes.append(Date())
                 }
             } label: {
                 Label {
