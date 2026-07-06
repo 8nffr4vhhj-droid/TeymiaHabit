@@ -124,7 +124,7 @@ private extension ProgressRing {
                             startPoint: .leading,
                             endPoint: .trailing
                         )
-                        frame(size: adaptiveLineWidth)
+                        .frame(size: adaptiveLineWidth)
                         .offset(y: -size / 2)
                     }
                     .shadow(
